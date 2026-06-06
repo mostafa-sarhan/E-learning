@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+.wwebjs_*/
+.wwebjs_auth/
+.wwebjs_cache/
+.npm-cache/
+test-results.js
+system-learning/Untitled
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
