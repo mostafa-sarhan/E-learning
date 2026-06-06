@@ -1,0 +1,11 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "Backend-learning": false
+    }
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rootDirectory": "system-learning"
+}
