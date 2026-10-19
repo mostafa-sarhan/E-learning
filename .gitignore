@@ -22,3 +22,8 @@ system-learning/Untitled
 *.njsproj
 *.sln
 *.sw?
+
+# Local artifacts
+coverage/
+*.tgz
+backups/

@@ -61,7 +61,7 @@ cp .env.example .env && chmod 600 .env
 #   (the server refuses to start in production without MONGO_URI, JWT_SECRET >= 32 chars, CORS_ORIGINS)
 #   WHATSAPP_SESSION_PATH=/var/lib/academy/wwebjs_auth
 #   PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
-PUPPETEER_SKIP_DOWNLOAD=true npm ci
+PUPPETEER_SKIP_DOWNLOAD=true npm ci --include=dev   # dev deps (TypeScript) are needed to build
 npm run build
 npm prune --omit=dev
 pm2 start ecosystem.config.js
@@ -97,7 +97,7 @@ Existing student passwords keep working. Admins can no longer view them. They us
 ```bash
 cd /var/www/academy/app/system-learning
 echo "VITE_API_URL=https://academy.example.com" > .env.production   # build fails if missing
-npm ci && npm run build
+npm ci --include=dev && npm run build
 mkdir -p /var/www/academy/frontend
 rsync -a --delete dist/ /var/www/academy/frontend/
 ```
@@ -120,8 +120,8 @@ To run without WhatsApp, set `WHATSAPP_ENABLED=false`.
 ## 7. Updates
 ```bash
 cd /var/www/academy/app && git pull
-cd Backend-learning && PUPPETEER_SKIP_DOWNLOAD=true npm ci && npm run build && npm prune --omit=dev && pm2 restart academy-api
-cd ../system-learning && npm ci && npm run build && rsync -a --delete dist/ /var/www/academy/frontend/
+cd Backend-learning && PUPPETEER_SKIP_DOWNLOAD=true npm ci --include=dev && npm run build && npm prune --omit=dev && pm2 restart academy-api
+cd ../system-learning && npm ci --include=dev && npm run build && rsync -a --delete dist/ /var/www/academy/frontend/
 ```
 
 ## Auth notes

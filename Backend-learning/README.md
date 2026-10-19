@@ -16,8 +16,11 @@ For production build:
 
 ```bash
 npm run build
-npm start
+npm start          # or: pm2 start ecosystem.config.js
 ```
+
+Production setup (Nginx, PM2, MongoDB, HTTPS, WhatsApp): see `../deploy/DEPLOYMENT.md`.
+All `/api` routes except `/api/health` and `/api/auth/login` require a JWT.
 
 ## Mongo Compass
 
