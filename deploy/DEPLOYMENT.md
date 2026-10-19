@@ -98,7 +98,7 @@ the isolation boundary: non-root, all capabilities dropped, `no-new-privileges`.
 ## 6. Safe update workflow
 ```bash
 cd /opt/academy
-./deploy/backup.sh                               # MongoDB + WhatsApp session backup (section 7)
+./deploy/backup.sh                               # online MongoDB backup, verified (section 7)
 docker compose images                            # note the current tag for rollback
 git pull
 export ACADEMY_IMAGE_TAG=$(git rev-parse --short HEAD)
@@ -107,36 +107,93 @@ docker compose up -d                             # recreates changed services; v
 docker compose ps
 ```
 
-## 7. Backup and restore
-`./deploy/backup.sh` writes to `backups/` (git-ignored). It runs the following:
-```bash
-mkdir -p backups && chmod 700 backups
-# MongoDB: credentials stay inside the container (read from its environment)
-docker compose exec -T academy-mongodb sh -c \
-  'mongodump --archive --gzip -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --db "$MONGO_APP_DB"' \
-  > backups/mongo-$(date +%F-%H%M).archive.gz
+## 7. Backups, scheduling and restore
 
-# WhatsApp session: stop the backend briefly for a consistent copy
-docker compose stop academy-backend
-docker run --rm -v academy-whatsapp-session:/src:ro -v "$PWD/backups":/backup alpine:3.20 \
-  tar czf /backup/whatsapp-$(date +%F-%H%M).tgz -C /src .
-docker compose start academy-backend
+### 7.1 MongoDB backup (online, no downtime)
+```bash
+./deploy/backup.sh
 ```
-Copy backups off the server regularly.
+- `mongodump` runs inside `academy-mongodb` with the least-privilege app user, and only the academy database is dumped. No container is stopped.
+- The archive is written to a `.partial` file first. It's discarded if `mongodump` fails, if the file is smaller than `MIN_BYTES`, if the gzip stream is incomplete, or if `mongorestore --dryRun` can't read it. A dry run reads the archive and writes nothing.
+- Valid archives become `backups/mongo/academy-mongo-YYYYMMDD-HHMMSS.archive.gz`, with a `.sha256` checksum file next to each.
+- **Retention:** files matching `academy-mongo-*.archive.gz` in `BACKUP_DIR` that are older than `RETENTION_DAYS` (default 14) are deleted, but the newest `MIN_KEEP` (default 7) are always kept. Nothing else is touched.
+- Overlapping runs are blocked with `flock`.
 
-Restore MongoDB. **This replaces the academy collections.** Take a fresh backup first:
+### 7.2 Daily schedule (choose one)
+The user that runs the job must be allowed to run `docker compose` (docker group).
+
+**systemd timer (recommended):**
 ```bash
+sudo cp deploy/systemd/academy-backup.service deploy/systemd/academy-backup.timer /etc/systemd/system/
+sudo nano /etc/systemd/system/academy-backup.service      # set User= and the /opt/academy paths
+sudo systemctl daemon-reload
+sudo systemctl enable --now academy-backup.timer
+systemctl list-timers academy-backup.timer                # next run
+sudo systemctl start academy-backup.service               # optional: run once now
+journalctl -u academy-backup.service -n 50                # results
+```
+**or cron** (`crontab -e` as the deploy user):
+```
+15 3 * * * cd /opt/academy && RETENTION_DAYS=14 MIN_KEEP=7 ./deploy/backup.sh >> "$HOME/academy-backup.log" 2>&1
+```
+
+### 7.3 WhatsApp session backup (explicit, not scheduled)
+```bash
+./deploy/backup-whatsapp.sh                 # online copy; backend keeps running
+./deploy/backup-whatsapp.sh --stop-backend  # consistent snapshot; stops ONLY academy-backend for seconds
+```
+Chromium writes to the session while it runs, so an online copy may be inconsistent. If a restored
+session fails, re-scan the QR code, or take the next backup with `--stop-backend`. Frontend and MongoDB keep
+running. The volume is mounted read-only, the archive is verified with a full `tar` listing, and the
+newest `MIN_KEEP` (default 5) archives are kept.
+
+### 7.4 Off-server encrypted copies
+Backups on the VPS don't protect against losing the VPS. Encrypt on the server with a **public** key,
+so the server can't decrypt its own backups, then copy them elsewhere.
+```bash
+# Once, on your own machine (keep the key file offline / in a password manager):
+age-keygen -o academy-backup.key          # prints the public key: age1...
+# On the VPS (apt install age rclone; configure an rclone remote, e.g. S3/B2/Drive):
+f=$(ls -1t backups/mongo/academy-mongo-*.archive.gz | head -1)
+age -r age1YOURPUBLICKEY -o "$f.age" "$f"
+rclone copy "$f.age" remote:academy-backups/mongo/ && rm -f "$f.age"
+# Decrypt later on a trusted machine:
+age -d -i academy-backup.key -o restore.archive.gz academy-mongo-....archive.gz.age
+```
+To automate this, add the `age` and `rclone` lines after `backup.sh` in the same cron or systemd job.
+Use a bucket or remote with its own retention, and versioning or object lock if available.
+
+### 7.5 Restore test (isolated, never production)
+Run this regularly, for example monthly, and after any backup change:
+```bash
+./deploy/restore-test.sh backups/mongo/academy-mongo-YYYYMMDD-HHMMSS.archive.gz
+```
+The script:
+- starts a throwaway `mongo:8.0` container (`academy-restore-test-*`) with **no network**, no published
+  ports, data on tmpfs and no named volumes;
+- checks the `.sha256` checksum;
+- restores the archive into that container;
+- prints each collection and its document count, and fails if nothing was restored;
+- removes only that temporary container.
+
+It never connects to `academy-mongodb` or its volume.
+
+### 7.6 Restoring production (emergency only)
+**This replaces the academy collections.** Run a restore test with the same archive and take a fresh backup first:
+```bash
+./deploy/backup.sh
 docker compose exec -T academy-mongodb sh -c \
   'mongorestore --archive --gzip --drop -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --nsInclude="$MONGO_APP_DB.*"' \
-  < backups/mongo-YYYY-MM-DD-HHMM.archive.gz
+  < backups/mongo/academy-mongo-YYYYMMDD-HHMMSS.archive.gz
 ```
-Restore the WhatsApp session:
+Restore the WhatsApp session (stops only the backend):
 ```bash
 docker compose stop academy-backend
-docker run --rm -v academy-whatsapp-session:/dst -v "$PWD/backups":/backup:ro alpine:3.20 \
-  sh -c 'rm -rf /dst/* && tar xzf /backup/whatsapp-YYYY-MM-DD-HHMM.tgz -C /dst && chown -R 1000:1000 /dst'
+docker run --rm --network none -v academy-whatsapp-session:/dst -v "$PWD/backups/whatsapp":/backup:ro alpine:3.20 \
+  sh -c 'rm -rf /dst/* && tar xzf /backup/academy-whatsapp-YYYYMMDD-HHMMSS.tgz -C /dst && chown -R 1000:1000 /dst'
 docker compose start academy-backend
 ```
+Volumes are never deleted or recreated. Never use `docker compose down -v` or any prune command.
 
 ## 8. Rollback
 Images are tagged with the commit hash, and earlier tags stay on the host.

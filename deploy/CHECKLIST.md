@@ -13,7 +13,8 @@ Step-by-step commands are in `DEPLOYMENT.md`.
 - [x] MongoDB auth with a least-privilege app user created on first start; named volumes for data and the WhatsApp session
 - [x] WhatsApp: Debian Chromium, `PUPPETEER_SKIP_DOWNLOAD=true`, session volume writable by the app user, single initialization, no `pkill`
 - [x] Graceful shutdown on SIGTERM (`init: true`, 20 s grace period)
-- [x] Backup script, restore and rollback instructions; no global Docker cleanup commands
+- [x] Online, verified MongoDB backups (`backup.sh`), daily systemd/cron templates, retention scoped to academy files
+- [x] Explicit WhatsApp session backup (`backup-whatsapp.sh`), isolated restore test (`restore-test.sh`), off-server encryption guide; no prune or volume deletion
 - [x] Local checks passing: Compose config validation, frontend lint/build, backend type check/build, 19 backend tests
 
 ## B. Configure during deployment (`.env` from `.env.example`)
@@ -40,7 +41,8 @@ Step-by-step commands are in `DEPLOYMENT.md`.
 - [ ] No unexpected 429 responses during normal use (`docker compose logs academy-backend`)
 - [ ] WhatsApp: Chromium starts, QR appears in the dashboard, a test message is delivered
 - [ ] WhatsApp session survives `docker compose restart academy-backend` and an image rebuild
-- [ ] `./deploy/backup.sh` produces both backups; a restore has been tested once
+- [ ] Backup timer enabled (`systemctl list-timers academy-backup.timer`); first scheduled run succeeded
+- [ ] `./deploy/restore-test.sh` passes on a real archive; an off-server encrypted copy exists
 - [ ] Containers come back after a VPS reboot (`restart: unless-stopped`; the Docker service is enabled)
 
 ## Known accepted risks
