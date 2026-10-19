@@ -16,7 +16,7 @@ x-hardening: &hardening
 services:
   academy-mongodb:
     <<: *hardening
-    image: mongo:8.0
+    image: mongo:7.0.45
     container_name: academy-mongodb
     command: ["mongod", "--bind_ip_all", "--auth"]
     environment:
