@@ -193,11 +193,23 @@ export async function endWhatsAppSession(): Promise<boolean> {
   }
 }
 
+// Synthetic numbers (demo data uses "0000…", stored or normalized as "20000…") are never real subscribers.
+export function isSyntheticPhone(phone: string): boolean {
+  const digits = phone.replace(/[^0-9]/g, "");
+  const national = digits.startsWith("20") ? digits.slice(2) : digits;
+  return national.startsWith("000");
+}
+
 export async function sendWhatsAppMessage(
   phone: string,
   message: string,
   logMetadata?: { studentName?: string; messageType?: string }
 ): Promise<boolean> {
+  if (isSyntheticPhone(phone)) {
+    console.warn("WhatsApp send skipped: synthetic phone number.");
+    return false;
+  }
+
   if (!client) {
     console.error("WhatsApp client is not initialized");
     return false;

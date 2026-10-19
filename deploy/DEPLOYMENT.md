@@ -15,7 +15,7 @@ Run every command from the repository directory. The Compose file sets `name: ac
 all commands are scoped to the academy project.
 **Never use** `docker system prune`, `docker volume prune` or `docker compose down -v`.
 
-Placeholders: `academy.example.com`, `/opt/academy`, `<repo-url>`.
+Placeholders: `academy.example.com`, `/opt/educational-academy`, `<repo-url>`.
 
 ## 1. Pre-flight (read-only)
 ```bash
@@ -28,8 +28,8 @@ free -h                                      # backend (Chromium) may use up to 
 
 ## 2. Initial deployment
 ```bash
-sudo mkdir -p /opt/academy && sudo chown $USER /opt/academy
-git clone <repo-url> /opt/academy && cd /opt/academy
+sudo mkdir -p /opt/educational-academy && sudo chown $USER /opt/educational-academy
+git clone <repo-url> /opt/educational-academy && cd /opt/educational-academy
 cp .env.example .env && chmod 600 .env
 ```
 Edit `.env`. Compose reads it automatically for `${...}` interpolation; no other env file is needed.
@@ -97,7 +97,7 @@ the isolation boundary: non-root, all capabilities dropped, `no-new-privileges`.
 
 ## 6. Safe update workflow
 ```bash
-cd /opt/academy
+cd /opt/educational-academy
 ./deploy/backup.sh                               # online MongoDB backup, verified (section 7)
 docker compose images                            # note the current tag for rollback
 git pull
@@ -125,7 +125,7 @@ The user that runs the job must be allowed to run `docker compose` (docker group
 **systemd timer (recommended):**
 ```bash
 sudo cp deploy/systemd/academy-backup.service deploy/systemd/academy-backup.timer /etc/systemd/system/
-sudo nano /etc/systemd/system/academy-backup.service      # set User= and the /opt/academy paths
+sudo nano /etc/systemd/system/academy-backup.service      # set User= and the /opt/educational-academy paths
 sudo systemctl daemon-reload
 sudo systemctl enable --now academy-backup.timer
 systemctl list-timers academy-backup.timer                # next run
@@ -134,7 +134,7 @@ journalctl -u academy-backup.service -n 50                # results
 ```
 **or cron** (`crontab -e` as the deploy user):
 ```
-15 3 * * * cd /opt/academy && RETENTION_DAYS=14 MIN_KEEP=7 ./deploy/backup.sh >> "$HOME/academy-backup.log" 2>&1
+15 3 * * * cd /opt/educational-academy && RETENTION_DAYS=14 MIN_KEEP=7 ./deploy/backup.sh >> "$HOME/academy-backup.log" 2>&1
 ```
 
 ### 7.3 WhatsApp session backup (explicit, not scheduled)
@@ -214,6 +214,9 @@ docker compose exec academy-backend node dist/scripts/removePlainPasswords.js --
 # Stop the stack (volumes are kept):
 docker compose down
 ```
+
+## 10. Demo data
+Optional showcase data (explicit seed/cleanup commands, dry run by default): see `DEMO_DATA.md`.
 
 ## Known risks
 - `whatsapp-web.js` pins Puppeteer 24, which has 9 high `npm audit` advisories in its

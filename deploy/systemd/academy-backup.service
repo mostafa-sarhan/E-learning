@@ -1,5 +1,5 @@
 # Daily academy MongoDB backup (online; does not stop any container).
-# Install: see deploy/DEPLOYMENT.md "Scheduled backups". Replace /opt/academy and the user.
+# Install: see deploy/DEPLOYMENT.md "Scheduled backups". Replace /opt/educational-academy and the user.
 [Unit]
 Description=Academy MongoDB backup
 Wants=docker.service
@@ -9,9 +9,9 @@ After=docker.service
 Type=oneshot
 User=deploy
 # The user must be able to run `docker compose` (member of the docker group).
-WorkingDirectory=/opt/academy
+WorkingDirectory=/opt/educational-academy
 Environment=RETENTION_DAYS=14
 Environment=MIN_KEEP=7
-ExecStart=/opt/academy/deploy/backup.sh
+ExecStart=/opt/educational-academy/deploy/backup.sh
 Nice=10
 IOSchedulingClass=idle
