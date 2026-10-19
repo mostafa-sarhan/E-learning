@@ -11,18 +11,12 @@ function getInitials(name) {
   return name.charAt(0);
 }
 
-function formatDate(dateString) {
-  const d = new Date(dateString);
-  return d.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
-}
-
 function StudentProgressCard({ student, onClick }) {
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!student?._id) return;
-    setLoading(true);
     fetch(`${API_BASE}/api/progress/dashboard/${student._id}`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
@@ -334,7 +328,6 @@ export default function StudentProgressReport() {
 
   useEffect(() => {
     if (!user) return;
-    setLoading(true);
     fetch(`${API_BASE}/api/students`)
       .then(res => res.ok ? res.json() : [])
       .then(data => {

@@ -65,7 +65,6 @@ async function seedExistingStudents() {
         name: student.name,
         email,
         password,
-        plainPassword: password,
         role: "student",
         studentId: student._id as any,
       });

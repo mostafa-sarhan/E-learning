@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -31,7 +31,7 @@ function StudentLogin({ onLogin }) {
       } else {
         setError(data.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة");
       }
-    } catch (e) {
+    } catch {
       setError("حدث خطأ أثناء الاتصال");
     } finally {
       setLoading(false);

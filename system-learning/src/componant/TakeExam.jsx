@@ -42,6 +42,8 @@ function TakeExam({ exam, student, onBack, onSubmit }) {
     if (started && timeLeft === 0 && !submitting) {
       handleSubmit();
     }
+    // Auto-submit when time runs out; handleSubmit is read from the same render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, started, submitting]);
 
   const formatTime = (seconds) => {

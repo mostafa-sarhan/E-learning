@@ -6,19 +6,19 @@ import {
   getStudents,
   updateStudent,
   updateStudentStatus,
-  studentLogin,
   getAvailableExamsForStudent,
 } from "../controllers/studentController";
+import { guardObjectIdParams, requireSelfOrStaff, requireStaff } from "../middleware/auth";
 
 const router = express.Router();
+guardObjectIdParams(router);
 
-router.get("/", getStudents);
-router.get("/:id", getStudentById);
-router.post("/", createStudent);
-router.post("/login", studentLogin);
-router.get("/:studentId/exams", getAvailableExamsForStudent);
-router.put("/:id", updateStudent);
-router.patch("/:id/status", updateStudentStatus);
-router.delete("/:id", deleteStudent);
+router.get("/", requireStaff, getStudents);
+router.get("/:id", requireStaff, getStudentById);
+router.post("/", requireStaff, createStudent);
+router.get("/:studentId/exams", requireSelfOrStaff(), getAvailableExamsForStudent);
+router.put("/:id", requireStaff, updateStudent);
+router.patch("/:id/status", requireStaff, updateStudentStatus);
+router.delete("/:id", requireStaff, deleteStudent);
 
 export default router;

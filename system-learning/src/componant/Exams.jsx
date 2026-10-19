@@ -236,7 +236,7 @@ function QuestionManager({ exam, onBack, showToast }) {
   );
 }
 
-function ExamResults({ exam, onBack, showToast }) {
+function ExamResults({ exam, onBack }) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -393,9 +393,6 @@ const [whatsAppSent, setWhatsAppSent] = useState(() => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const availableTerms = useMemo(() => {
-    return GRADES.filter(g => groups.some(gr => gr.academicYear === g));
-  }, [groups]);
 
   const filteredGroups = useMemo(() => {
     if (!formGrade) return [];
@@ -500,11 +497,6 @@ const [whatsAppSent, setWhatsAppSent] = useState(() => {
     return groups;
   }, [exams]);
 
-  const totalByYear = useMemo(() => {
-    const t = {};
-    exams.forEach(e => { t[e.academicYear] = (t[e.academicYear] || 0) + 1; });
-    return t;
-  }, [exams]);
 
   const upcomingExams = exams.filter(e => getExamStatus(e.date, e.startTime, e.durationMins).text === "قادم");
   const activeExams = exams.filter(e => getExamStatus(e.date, e.startTime, e.durationMins).text === "جاري الآن");

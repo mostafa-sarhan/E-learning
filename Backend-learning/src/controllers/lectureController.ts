@@ -13,7 +13,7 @@ export const getLectures = async (req: Request, res: Response) => {
 export const getLecturesByYear = async (req: Request, res: Response) => {
   try {
     const { year } = req.params;
-    const lectures = await LectureModel.find({ academicYear: year }).sort({ order: 1, createdAt: 1 });
+    const lectures = await LectureModel.find({ academicYear: String(year) as any }).sort({ order: 1, createdAt: 1 });
     res.json(lectures);
   } catch (e) {
     res.status(500).json({ message: "Failed to fetch lectures." });

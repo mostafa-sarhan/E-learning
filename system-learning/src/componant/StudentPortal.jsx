@@ -4,8 +4,12 @@ import StudentDashboard from "./StudentDashboard";
 
 function StudentPortal() {
   const [student, setStudent] = useState(() => {
-    const saved = sessionStorage.getItem("student_session");
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = JSON.parse(sessionStorage.getItem("student_session") || "null");
+      return saved?.token ? saved : null;
+    } catch {
+      return null;
+    }
   });
 
   useEffect(() => {

@@ -58,7 +58,7 @@ export async function createPayment(req: Request, res: Response): Promise<void> 
 
 async function sendPaymentWhatsApp(student: any, payment: any): Promise<void> {
   if (!isWhatsAppReady()) {
-    console.log("WhatsApp not ready, skipping payment notification for", student.name);
+    console.log("WhatsApp not ready, skipping payment notification.");
     return;
   }
 
@@ -81,7 +81,7 @@ async function sendPaymentWhatsApp(student: any, payment: any): Promise<void> {
     messageType: "payment",
   });
   if (success) {
-    console.log(`Payment WhatsApp sent to ${student.name} (${finalPhone})`);
+    console.log("Payment WhatsApp notification sent.");
   } else {
     console.error(`Failed to send payment WhatsApp to ${student.name} (${finalPhone})`);
   }

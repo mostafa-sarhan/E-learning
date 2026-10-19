@@ -3,7 +3,6 @@ import type { AcademicGrade } from "../constants/academicGrades";
 import { Student } from "../types/models";
 import { validateStudentPayload } from "../utils/validation";
 import StudentModel from "../models/studentModel";
-import UserModel from "../models/userModel";
 import ExamModel from "../models/examModel";
 
 
@@ -78,7 +77,7 @@ export async function createStudent(
     name: payload.name!.trim(),
     phone: payload.phone!.trim(),
     fatherPhone: payload.fatherPhone!.trim(),
-    academicYear: payload.academicYear!.trim(),
+    academicYear: payload.academicYear!.trim() as any,
     birthday,
     status: payload.status!,
     group: payload.group,
@@ -87,27 +86,6 @@ export async function createStudent(
   // Populate group details to return
   await newStudent.populate("group");
 
-  // Auto-create student login account
-  try {
-    const transliterated = transliterateName(payload.name!.trim());
-    const email = transliterated + "@route-academy.com";
-
-    const existingUser = await UserModel.findOne({ email });
-    if (!existingUser) {
-      const password = generatePassword();
-      await UserModel.create({
-        name: payload.name!.trim(),
-        email,
-        password,
-        plainPassword: password,
-        role: "student",
-        studentId: newStudent._id as any,
-      });
-    }
-  } catch (e) {
-    console.error("Failed to create student account:", e);
-  }
-  
   res.status(201).json(newStudent);
 }
 
@@ -249,36 +227,4 @@ export async function getAvailableExamsForStudent(
     console.error(error);
     res.status(500).json({ message: "Internal server error." });
   }
-}
-
-function transliterateName(name: string): string {
-  const arabicToEnglish: Record<string, string> = {
-    ا: "a", أ: "a", إ: "i", آ: "a", ب: "b", ت: "t", ث: "th", ج: "j",
-    ح: "h", خ: "kh", د: "d", ذ: "dh", ر: "r", ز: "z", س: "s", ش: "sh",
-    ص: "s", ض: "d", ط: "t", ظ: "z", ع: "a", غ: "gh", ف: "f", ق: "q",
-    ك: "k", ل: "l", م: "m", ن: "n", ه: "h", و: "w", ي: "y", ى: "a",
-    ء: "a", ة: "a",
-  };
-
-  let result = "";
-  for (const char of name) {
-    result += arabicToEnglish[char] || char;
-  }
-
-  return result
-    .replace(/\s+/g, ".")
-    .replace(/[^a-zA-Z0-9.]/g, "")
-    .toLowerCase()
-    .replace(/\.+/g, ".")
-    .replace(/^\.|\.$/g, "")
-    .substring(0, 30);
-}
-
-function generatePassword(): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let password = "";
-  for (let i = 0; i < 8; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
 }

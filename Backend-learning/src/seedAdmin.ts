@@ -12,10 +12,17 @@ async function seedAdmin() {
       process.exit(0);
     }
 
+    const email = process.env.SEED_ADMIN_EMAIL;
+    const password = process.env.SEED_ADMIN_PASSWORD;
+    if (!email || !password || password.length < 12) {
+      console.error("Set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD (min 12 chars) to seed an admin.");
+      process.exit(1);
+    }
+
     const admin = await UserModel.create({
       name: "المدير العام",
-      email: "admin@route-academy.com",
-      password: "admin123",
+      email,
+      password,
       role: "admin",
     });
 

@@ -12,12 +12,19 @@ function AdminUsers() {
   const [formRole, setFormRole] = useState("employee");
   const [submitting, setSubmitting] = useState(false);
 
+
+
+
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/auth/users`);
       if (res.ok) {
         const allUsers = await res.json();
+
+
+        /// hELLO QOWLD FKF PKMDMCXCVDS
+
         setUsers(allUsers.filter(u => u.role === "admin" || u.role === "employee"));
       }
     } catch (e) { console.error(e); }
@@ -38,7 +45,7 @@ function AdminUsers() {
       });
       if (res.ok) { setFormName(""); setFormEmail(""); setFormPassword(""); setShowForm(false); fetchUsers(); }
       else { const data = await res.json(); alert(data.message || "فشل في إضافة المستخدم"); }
-    } catch (e) { alert("حدث خطأ"); }
+    } catch { alert("حدث خطأ"); }
     finally { setSubmitting(false); }
   };
 
@@ -67,15 +74,6 @@ function AdminUsers() {
       case "employee": return "bg-blue-100 text-blue-700";
       case "student": return "bg-emerald-100 text-emerald-700";
       default: return "bg-slate-100 text-slate-700";
-    }
-  };
-
-  const roleLabel = (role) => {
-    switch (role) {
-      case "admin": return "مدير";
-      case "employee": return "موظف";
-      case "student": return "طالب";
-      default: return role;
     }
   };
 

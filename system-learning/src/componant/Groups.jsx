@@ -128,7 +128,7 @@ function Groups() {
       const res = await fetch(`${API_BASE}/api/groups/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("فشل الحذف");
       await fetchGroups();
-    } catch (e) {
+    } catch {
       setError("حدث خطأ أثناء حذف المجموعة.");
     }
   };

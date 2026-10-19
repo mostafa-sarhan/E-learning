@@ -59,7 +59,7 @@ export async function createExam(req: Request, res: Response): Promise<void> {
       date: new Date(date),
       startTime,
       durationMins: Number(durationMins),
-    });
+    });``
 
     res.status(201).json(newExam);
   } catch (error) {
@@ -135,7 +135,6 @@ export async function sendResultsWhatsApp(req: Request, res: Response): Promise<
       const phone = student.fatherPhone.replace(/[^0-9]/g, "");
       const cleanPhone = phone.startsWith("0") ? phone.slice(1) : phone;
       const finalPhone = cleanPhone.startsWith("20") ? cleanPhone : `20${cleanPhone}`;
-      console.log(`Processing student: ${student.name}, Phone: ${finalPhone}`);
 
       const message = `السلام عليكم
 نود علم سيادتكم بان الطالب / ${student.name}

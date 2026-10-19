@@ -4,8 +4,10 @@ import {
   getEnrollments,
   removeEnrollment,
 } from "../controllers/enrollmentController";
+import { guardObjectIdParams } from "../middleware/auth";
 
 const router = express.Router();
+guardObjectIdParams(router);
 
 router.get("/", getEnrollments);
 router.post("/", enrollStudent);

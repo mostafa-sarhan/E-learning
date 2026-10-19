@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { getStoredRates, setStoredRates } from "../utils/rates";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
-export { getStoredRates, setStoredRates };
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
 function formatDate(value) {
   if (value == null || value === "") return "—";
@@ -27,6 +26,7 @@ function Accounting() {
   const [showRates, setShowRates] = useState(false);
   const [academicYears, setAcademicYears] = useState([]);
   const [filterMonth, setFilterMonth] = useState("");
+  const [Grade ,SetGrade]=useState("")
 
   useEffect(() => {
     const handler = () => setRates(getStoredRates());
@@ -74,6 +74,9 @@ function Accounting() {
     finally { setLoading(false); }
   }, []);
 
+
+  //kkdmsmcic,fddmmnfc ne, mostdcad kppdasc lovv vd
+
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const totalIncome = useMemo(() => payments.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0), [payments]);
@@ -81,6 +84,7 @@ function Accounting() {
   const netProfit = totalIncome - totalExpenses;
   const displayIncome = filterMonth ? filteredIncome : totalIncome;
 
+  //Handle appexcence 
   const handleAddExpense = async (e) => {
     e.preventDefault();
     if (!expenseTitle.trim() || !expenseAmount) return;
@@ -93,7 +97,7 @@ function Accounting() {
       });
       if (res.ok) { setExpenseTitle(""); setExpenseAmount(""); setShowForm(false); fetchData(); }
       else alert("فشل في إضافة المصروف");
-    } catch (e) { alert("حدث خطأ"); }
+    } catch { alert("حدث خطأ"); }
     finally { setSubmitting(false); }
   };
 
@@ -105,33 +109,11 @@ function Accounting() {
     } catch (e) { console.error(e); }
   };
 
-  const handleAddRate = (e) => {
-    e.preventDefault();
-    if (!rateYear || !rateAmount) return;
-    setRates(prev => {
-      const next = { ...prev, [rateYear]: Number(rateAmount) };
-      setStoredRates(next);
-      return next;
-    });
-    setRateYear("");
-    setRateAmount("");
-    setEditingRateId(null);
-  };
-
-  const handleDeleteRate = (year) => {
-    setRates(prev => {
-      const next = { ...prev };
-      delete next[year];
-      setStoredRates(next);
-      return next;
-    });
-  };
-
   const handleAddNewYear = () => {
     const name = prompt("أدخل اسم الصف الدراسي:");
     if (name && name.trim()) {
       const trimmed = name.trim();
-      if (!rates.hasOwnProperty(trimmed)) {
+      if (!Object.hasOwn(rates, trimmed)) {
         setRates(prev => {
           const next = { ...prev, [trimmed]: 0 };
           setStoredRates(next);
@@ -141,29 +123,9 @@ function Accounting() {
     }
   };
 
-  const startEditRate = (year, amount) => {
-    setEditingRateId(year);
-    setEditRateAmount(amount);
-  };
-
-  const saveEditRate = (year) => {
-    if (!editRateAmount) return;
-    setRates(prev => {
-      const next = { ...prev, [year]: Number(editRateAmount) };
-      setStoredRates(next);
-      return next;
-    });
-    setEditingRateId(null);
-    setEditRateAmount("");
-  };
-
-  const cancelEditRate = () => {
-    setEditingRateId(null);
-    setEditRateAmount("");
-  };
-
   return (
     <div className="space-y-6">
+    <div className="py-7 mx-2"></div>
       <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">إدارة الحسابات</h1>
@@ -234,7 +196,6 @@ function Accounting() {
 
           <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {availableYears.map(year => {
-              const rate = rates[year] || 0;
               return (
                 <div key={year} className="rounded-xl border border-slate-200 p-4 flex items-center justify-between gap-3">
                   <div>

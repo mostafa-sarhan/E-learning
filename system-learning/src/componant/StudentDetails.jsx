@@ -55,8 +55,6 @@ function StudentDetails({ student, onBack }) {
   }, [student._id]);
 
   const now = new Date();
-  const currentMonth = months[now.getMonth()];
-  const lastMonth = months[(now.getMonth() + 11) % 12];
 
   useEffect(() => {
     fetchData();
@@ -103,7 +101,7 @@ function StudentDetails({ student, onBack }) {
       } else {
         alert("فشل الحذف");
       }
-    } catch (e) {
+    } catch {
       alert("حدث خطأ أثناء الحذف");
     }
   };

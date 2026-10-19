@@ -6,8 +6,10 @@ import {
   getCourses,
   updateCourse,
 } from "../controllers/courseController";
+import { guardObjectIdParams } from "../middleware/auth";
 
 const router = express.Router();
+guardObjectIdParams(router);
 
 router.get("/", getCourses);
 router.get("/:id", getCourseById);

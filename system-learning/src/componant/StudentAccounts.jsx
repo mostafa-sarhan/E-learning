@@ -6,22 +6,20 @@ const ACADEMIC_YEARS = ["الصف الاول", "الصف الثاني", "الص�
 
 function StudentAccounts() {
   const [students, setStudents] = useState([]);
-  const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
   const [copiedId, setCopiedId] = useState(null);
+  // Passwords are never retrievable; a reset shows the new one once, in memory only.
+  const [resetPasswords, setResetPasswords] = useState({});
+  const [resettingId, setResettingId] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [accountsRes, groupsRes] = await Promise.all([
-        fetch(`${API_BASE}/api/auth/students/accounts`),
-        fetch(`${API_BASE}/api/groups`),
-      ]);
+      const accountsRes = await fetch(`${API_BASE}/api/auth/students/accounts`);
       if (accountsRes.ok) setStudents(await accountsRes.json());
-      if (groupsRes.ok) setGroups(await groupsRes.json());
     } catch (e) {
       console.error(e);
     } finally {
@@ -37,6 +35,21 @@ function StudentAccounts() {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 1500);
+  };
+
+  const handleReset = async (s) => {
+    if (!window.confirm(`إعادة تعيين كلمة مرور ${s.name}؟ ستتوقف كلمة المرور الحالية عن العمل.`)) return;
+    setResettingId(s._id);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/students/${s._id}/reset-password`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || "فشل إعادة تعيين كلمة المرور");
+      setResetPasswords(prev => ({ ...prev, [s._id]: data.password }));
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setResettingId(null);
+    }
   };
 
   const filtered = students.filter(s => {
@@ -170,10 +183,11 @@ function StudentAccounts() {
                       </div>
                     </td>
                     <td className="px-5 py-4">
+                      {resetPasswords[s._id] ? (
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-1 rounded" dir="ltr">{s.plainPassword}</span>
+                        <span className="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-1 rounded" dir="ltr">{resetPasswords[s._id]}</span>
                         <button
-                          onClick={() => handleCopy(s.plainPassword, `pass-${s._id}`)}
+                          onClick={() => handleCopy(resetPasswords[s._id], `pass-${s._id}`)}
                           className="text-slate-400 hover:text-indigo-600 transition"
                           title="نسخ"
                         >
@@ -184,6 +198,15 @@ function StudentAccounts() {
                           )}
                         </button>
                       </div>
+                      ) : (
+                        <button
+                          onClick={() => handleReset(s)}
+                          disabled={resettingId === s._id}
+                          className="text-xs font-medium text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+                        >
+                          {resettingId === s._id ? "جاري..." : "إعادة تعيين"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

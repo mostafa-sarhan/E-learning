@@ -18,6 +18,43 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
+const colorMap = {
+  indigo: { bg: "bg-indigo-50", text: "text-indigo-600", gradient: "from-indigo-500 to-indigo-600", hover: "hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300" },
+  emerald: { bg: "bg-emerald-50", text: "text-emerald-600", gradient: "from-emerald-500 to-emerald-600", hover: "hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300" },
+  amber: { bg: "bg-amber-50", text: "text-amber-600", gradient: "from-amber-500 to-amber-600", hover: "hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300" },
+  purple: { bg: "bg-purple-50", text: "text-purple-600", gradient: "from-purple-500 to-purple-600", hover: "hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300" },
+  blue: { bg: "bg-blue-50", text: "text-blue-600", gradient: "from-blue-500 to-blue-600", hover: "hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300" },
+  rose: { bg: "bg-rose-50", text: "text-rose-600", gradient: "from-rose-500 to-rose-600", hover: "hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300" },
+};
+
+// Defined outside Home so it is not re-created on every render.
+const StatCard = ({ title, value, icon, color, trend, loading }) => (
+  <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-lg transition-all duration-300 group">
+    <div className="flex items-start justify-between">
+      <div className="flex-1">
+        <p className="text-sm text-slate-500 mb-1">{title}</p>
+        <p className="text-2xl font-bold text-slate-900">{loading ? (
+          <span className="inline-block w-16 h-7 bg-slate-200 rounded animate-pulse"></span>
+        ) : typeof value === 'number' && value > 999 ? (
+          <span>{value.toLocaleString('ar-EG')}</span>
+        ) : (
+          <span>{value}</span>
+        )}</p>
+        {trend && (
+          <p className={`text-xs mt-2 font-medium ${trend > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+            {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% عن الشهر السابق
+          </p>
+        )}
+      </div>
+      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorMap[color]?.gradient || 'from-slate-400 to-slate-500'} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d={icon} />
+        </svg>
+      </div>
+    </div>
+  </div>
+);
+
 function Home() {
   const { user } = useContext(AuthContext);
   const isAdmin = user?.role === "admin";
@@ -96,42 +133,6 @@ function Home() {
     ] : []),
   ];
 
-  const colorMap = {
-    indigo: { bg: "bg-indigo-50", text: "text-indigo-600", gradient: "from-indigo-500 to-indigo-600", hover: "hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300" },
-    emerald: { bg: "bg-emerald-50", text: "text-emerald-600", gradient: "from-emerald-500 to-emerald-600", hover: "hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300" },
-    amber: { bg: "bg-amber-50", text: "text-amber-600", gradient: "from-amber-500 to-amber-600", hover: "hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300" },
-    purple: { bg: "bg-purple-50", text: "text-purple-600", gradient: "from-purple-500 to-purple-600", hover: "hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300" },
-    blue: { bg: "bg-blue-50", text: "text-blue-600", gradient: "from-blue-500 to-blue-600", hover: "hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300" },
-    rose: { bg: "bg-rose-50", text: "text-rose-600", gradient: "from-rose-500 to-rose-600", hover: "hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300" },
-  };
-
-  const StatCard = ({ title, value, icon, color, trend }) => (
-    <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-lg transition-all duration-300 group">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm text-slate-500 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-slate-900">{loading ? (
-            <span className="inline-block w-16 h-7 bg-slate-200 rounded animate-pulse"></span>
-          ) : typeof value === 'number' && value > 999 ? (
-            <span>{value.toLocaleString('ar-EG')}</span>
-          ) : (
-            <span>{value}</span>
-          )}</p>
-          {trend && (
-            <p className={`text-xs mt-2 font-medium ${trend > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-              {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% عن الشهر السابق
-            </p>
-          )}
-        </div>
-        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorMap[color]?.gradient || 'from-slate-400 to-slate-500'} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d={icon} />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
@@ -156,11 +157,11 @@ function Home() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="إجمالي الطلاب" value={stats.students} color="indigo" trend={12} icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        <StatCard title="المجموعات النشطة" value={stats.groups} color="emerald" trend={8} icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-        <StatCard title="الامتحانات" value={stats.exams} color="purple" trend={5} icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        <StatCard loading={loading} title="إجمالي الطلاب" value={stats.students} color="indigo" trend={12} icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        <StatCard loading={loading} title="المجموعات النشطة" value={stats.groups} color="emerald" trend={8} icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        <StatCard loading={loading} title="الامتحانات" value={stats.exams} color="purple" trend={5} icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
         {isAdmin && (
-          <StatCard title="الإيرادات" value={stats.revenue} color="amber" trend={15} icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <StatCard loading={loading} title="الإيرادات" value={stats.revenue} color="amber" trend={15} icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         )}
       </div>
 

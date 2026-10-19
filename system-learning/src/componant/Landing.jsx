@@ -5,7 +5,9 @@ function Landing() {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    setIsVisible(true)
+    // Flip after first paint so the entrance transition runs.
+    const id = requestAnimationFrame(() => setIsVisible(true))
+    return () => cancelAnimationFrame(id)
   }, [])
 
   const features = [

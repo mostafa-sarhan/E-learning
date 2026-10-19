@@ -6,8 +6,10 @@ import {
   getGroups,
   updateGroup,
 } from "../controllers/groupController";
+import { guardObjectIdParams } from "../middleware/auth";
 
 const router = express.Router();
+guardObjectIdParams(router);
 
 router.get("/", getGroups);
 router.get("/:id", getGroupById);

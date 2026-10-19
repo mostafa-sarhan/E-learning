@@ -7,6 +7,7 @@ interface Props {
   qrCode: QRCodeData | null;
   loading: boolean;
   onEndSession?: () => void;
+  onGenerateQR?: () => void;
 }
 
 function StatusBadge({ connected }: { connected: boolean }) {
@@ -44,7 +45,7 @@ function formatConnectionTime(dateStr: string | null): string {
   }
 }
 
-function WhatsAppStatusCard({ status, qrCode, loading, onEndSession }: Props) {
+function WhatsAppStatusCard({ status, qrCode, loading, onEndSession, onGenerateQR }: Props) {
   const [ending, setEnding] = useState(false);
 
   if (loading) {
@@ -130,7 +131,7 @@ function WhatsAppStatusCard({ status, qrCode, loading, onEndSession }: Props) {
         </div>
       ) : (
         <div className="mt-2">
-          <WhatsAppQRCode qrCode={qrCode} />
+          <WhatsAppQRCode qrCode={qrCode} onGenerateQR={onGenerateQR} />
         </div>
       )}
     </section>

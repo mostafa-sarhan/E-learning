@@ -4,7 +4,9 @@ export function getStoredRates() {
   try {
     const raw = localStorage.getItem(RATES_KEY);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch {
+    // Corrupt or unavailable storage: fall back to no rates.
+  }
   return {};
 }
 

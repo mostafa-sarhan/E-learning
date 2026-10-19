@@ -12,7 +12,6 @@ function StudentTabs({
   onStartExam,
   onViewResult,
   formatDate,
-  updateProgress,
 }) {
   const [activeTab, setActiveTab] = useState("lessons");
 

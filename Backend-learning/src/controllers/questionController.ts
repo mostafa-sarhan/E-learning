@@ -6,8 +6,10 @@ import ExamSubmissionModel from "../models/examSubmissionModel";
 export async function getQuestionsByExam(req: Request, res: Response): Promise<void> {
   try {
     const { examId } = req.params;
-    const questions = await QuestionModel.find({ exam: examId }).sort({ createdAt: 1 });
-    res.json(questions);
+    const query = QuestionModel.find({ exam: examId }).sort({ createdAt: 1 });
+    // Students must never receive the answer key.
+    if (req.user?.role === "student") query.select("-correctAnswer");
+    res.json(await query);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error." });

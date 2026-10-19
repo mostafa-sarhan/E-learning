@@ -1,12 +1,11 @@
 import { Client, LocalAuth } from "whatsapp-web.js";
-import qrcode from "qrcode-terminal";
-import { exec } from "child_process";
-import { promisify } from "util";
 import fs from "fs";
 import path from "path";
 import WhatsAppMessageLogModel from "../models/whatsappMessageLogModel";
+import { env } from "../config/env";
 
-const execAsync = promisify(exec);
+const sessionPath = path.resolve(env.whatsappSessionPath);
+let initializing: Promise<void> | null = null;
 
 let client: Client | null = null;
 let isReady = false;
@@ -30,34 +29,54 @@ export function getConnectionInfo(): { phoneNumber: string | null; connectionTim
   return { phoneNumber, connectionTime };
 }
 
-async function killExistingBrowser(): Promise<void> {
-  try {
-    await execAsync("pkill -f '.wwebjs_auth' || true");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  } catch {
-    // Ignore errors - no process might be running
+// Remove a stale Chromium lock left by a crashed process. Scoped to this app's session
+// directory only, so other projects on the same host are never affected.
+function clearStaleBrowserLock(): void {
+  for (const dir of [sessionPath, path.join(sessionPath, "session")]) {
+    for (const lock of ["SingletonLock", "SingletonCookie", "SingletonSocket"]) {
+      try {
+        fs.rmSync(path.join(dir, lock), { force: true });
+      } catch {
+        // ignore
+      }
+    }
   }
 }
 
-export async function initWhatsAppClient(): Promise<void> {
-  if (client) return;
+export function initWhatsAppClient(): Promise<void> {
+  if (client) return Promise.resolve();
+  // Prevent duplicate concurrent initialization.
+  if (!initializing) {
+    initializing = startClient().finally(() => {
+      initializing = null;
+    });
+  }
+  return initializing;
+}
 
+async function startClient(): Promise<void> {
+  if (env.chromiumPath && !fs.existsSync(env.chromiumPath)) {
+    console.error("WhatsApp disabled: PUPPETEER_EXECUTABLE_PATH does not exist.");
+    return;
+  }
   try {
-    await killExistingBrowser();
+    // Session data (WhatsApp credentials) must persist and stay private to this app.
+    fs.mkdirSync(sessionPath, { recursive: true, mode: 0o700 });
+    clearStaleBrowserLock();
 
     client = new Client({
-      authStrategy: new LocalAuth({ dataPath: ".wwebjs_auth" }),
+      authStrategy: new LocalAuth({ dataPath: sessionPath }),
       puppeteer: {
         headless: true,
-        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"],
+        executablePath: env.chromiumPath,
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
       },
     });
 
     client.on("qr", (qr) => {
+      // QR is exposed only to authenticated staff via /api/whatsapp-status; never logged.
       currentQrCode = qr;
-      console.log("\n=== WhatsApp QR Code ===");
-      qrcode.generate(qr, { small: true });
-      console.log("Scan the QR code above with WhatsApp\n");
+      console.log("WhatsApp QR code generated; scan it from the dashboard.");
     });
 
     client.on("ready", () => {
@@ -80,8 +99,8 @@ export async function initWhatsAppClient(): Promise<void> {
       phoneNumber = null;
     });
 
-    client.on("auth_failure", (msg) => {
-      console.error("WhatsApp auth failed:", msg);
+    client.on("auth_failure", () => {
+      console.error("WhatsApp auth failed.");
       isReady = false;
       client = null;
       currentQrCode = null;
@@ -90,7 +109,7 @@ export async function initWhatsAppClient(): Promise<void> {
     });
 
     client.on("error", (err) => {
-      console.error("WhatsApp client error:", err);
+      console.error("WhatsApp client error:", err?.message || err);
       isReady = false;
       client = null;
       currentQrCode = null;
@@ -100,15 +119,44 @@ export async function initWhatsAppClient(): Promise<void> {
 
     await client.initialize();
   } catch (error: any) {
-    if (error.message?.includes("already running")) {
-      console.log("Browser already running, attempting to kill and retry...");
-      await killExistingBrowser();
-      client = null;
-      return initWhatsAppClient();
+    console.error("Failed to initialize WhatsApp client:", error?.message || error);
+    try {
+      await client?.destroy();
+    } catch {
+      // ignore
     }
-    console.error("Failed to initialize WhatsApp client:", error);
     client = null;
+    isReady = false;
   }
+}
+
+export async function shutdownWhatsApp(): Promise<void> {
+  if (!client) return;
+  try {
+    client.removeAllListeners();
+    await client.destroy();
+  } catch {
+    // ignore
+  }
+  client = null;
+  isReady = false;
+}
+
+export async function generateNewQR(): Promise<void> {
+  try {
+    if (client) {
+      client.removeAllListeners();
+      try {
+        await client.destroy();
+      } catch {}
+    }
+  } catch {}
+  isReady = false;
+  client = null;
+  currentQrCode = null;
+  connectionTime = null;
+  phoneNumber = null;
+  await initWhatsAppClient();
 }
 
 export async function endWhatsAppSession(): Promise<boolean> {
@@ -126,18 +174,17 @@ export async function endWhatsAppSession(): Promise<boolean> {
     connectionTime = null;
     phoneNumber = null;
 
-    const authPath = path.resolve(".wwebjs_auth");
-    if (fs.existsSync(authPath)) {
-      fs.rmSync(authPath, { recursive: true, force: true });
+    if (fs.existsSync(sessionPath)) {
+      fs.rmSync(sessionPath, { recursive: true, force: true });
     }
 
     initWhatsAppClient().catch((err) => {
-      console.error("Failed to reinitialize WhatsApp after end-session:", err);
+      console.error("Failed to reinitialize WhatsApp after end-session:", err?.message || err);
     });
 
     return true;
   } catch (error) {
-    console.error("Failed to end WhatsApp session:", error);
+    console.error("Failed to end WhatsApp session:", (error as Error)?.message);
     return false;
   }
 }
@@ -161,14 +208,11 @@ export async function sendWhatsAppMessage(
   try {
     const cleanPhone = phone.replace(/[^0-9]/g, "");
     const chatId = `${cleanPhone}@c.us`;
-    console.log(`Attempting to send message to chatId: ${chatId}`);
-    
-    const result = await client.sendMessage(chatId, message);
-    console.log(`Message sent successfully to ${cleanPhone}, message ID: ${result.id._serialized}`);
+    await client.sendMessage(chatId, message);
     success = true;
   } catch (error: any) {
-    console.error(`Failed to send message to ${phone}:`, error.message || error);
-    console.error("Full error:", error);
+    // Do not log phone numbers or message contents.
+    console.error("Failed to send WhatsApp message:", error?.message || error);
     success = false;
   }
 
@@ -177,7 +221,7 @@ export async function sendWhatsAppMessage(
       await WhatsAppMessageLogModel.create({
         studentName: logMetadata.studentName,
         parentPhone: phone,
-        messageType: logMetadata.messageType,
+        messageType: logMetadata.messageType as any,
         deliveryStatus: success ? "sent" : "failed",
         sentAt: new Date(),
       });

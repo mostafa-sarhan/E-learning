@@ -34,7 +34,7 @@ function GroupDetails({ group, onBack }) {
       } else {
         alert("فشل الحذف");
       }
-    } catch (e) {
+    } catch {
       alert("حدث خطأ أثناء الحذف");
     }
   };
@@ -52,16 +52,6 @@ function GroupDetails({ group, onBack }) {
       s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (s.phone || "").includes(searchTerm)
   );
-
-  const dayIcons = {
-    السبت: "🟤",
-    الأحد: "🟡",
-    الإثنين: "🟢",
-    الثلاثاء: "🔵",
-    الأربعاء: "🟣",
-    الخميس: "🟠",
-    الجمعة: "⚪",
-  };
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-12">

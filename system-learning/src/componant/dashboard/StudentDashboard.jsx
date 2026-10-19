@@ -66,13 +66,14 @@ function StudentDashboard({ student, onLogout }) {
         showToast("النتائج غير متاحة حالياً", "error");
       }
     }
+    // Re-validate only when the exam list changes, to avoid repeated toasts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exams]);
   const [loading, setLoading] = useState(true);
   const [activeExam, setActiveExam] = useState(null);
   const [submissionResult, setSubmissionResult] = useState(null);
   const [selectedLecture, setSelectedLecture] = useState(null);
   const [selectedResult, setSelectedResult] = useState(null);
-  const [currentLecture, setCurrentLecture] = useState(null);
   
   // Progress state from backend
   const [progressMap, setProgressMap] = useState({});
@@ -223,16 +224,6 @@ function StudentDashboard({ student, onLogout }) {
         console.log('No published exams found. examResults cleared.');
       }
 
-      // Pick first in-progress or last accessed as current (use progressMap after fetchProgress updates it)
-      setTimeout(() => {
-        const pMap = progressMap;
-        const inProgress = lc.find(l => {
-          const p = pMap[l._id];
-          return p && !p.completed && p.progressPercent > 0;
-        });
-        if (inProgress) setCurrentLecture(inProgress);
-        else if (lc.length > 0) setCurrentLecture(lc[0]);
-      }, 0);
 
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -266,11 +257,6 @@ function StudentDashboard({ student, onLogout }) {
     });
   }, [lecturesBySection]);
 
-  const averageScore = useMemo(() => {
-    if (examResults.length === 0) return 0;
-    const total = examResults.reduce((sum, r) => sum + (r.score || r.percentage || 0), 0);
-    return Math.round(total / examResults.length);
-  }, [examResults]);
 
   const extractVimeoId = (input) => {
     const trimmed = input?.trim() || "";
@@ -353,7 +339,6 @@ function StudentDashboard({ student, onLogout }) {
                 if (!iframe || !iframe.contentWindow) return;
 
                 // Use Vimeo postMessage API (no SDK needed)
-                const playerOrigin = '*';
                 
                 // Listen for messages from Vimeo
                 const messageHandler = (event) => {
@@ -389,7 +374,7 @@ function StudentDashboard({ student, onLogout }) {
                     if (data.event === 'finish') {
                       handleVideoTimeUpdate(selectedLecture._id, progress.lastTime || 0, progress.lastTime || 0);
                     }
-                  } catch (e) {
+                  } catch {
                     // Ignore parse errors
                   }
                 };

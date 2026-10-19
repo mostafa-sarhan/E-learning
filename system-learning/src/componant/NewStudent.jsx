@@ -120,7 +120,7 @@ function NewStudent({ onSuccess }) {
                 </div>
                 <div className="bg-emerald-50 rounded-xl p-3">
                   <p className="text-xs text-emerald-600 mb-0.5">كلمة المرور</p>
-                  <p className="font-mono text-emerald-900 font-semibold" dir="ltr">{createdAccount.password}</p>
+                  <p className="font-mono text-emerald-900 font-semibold" dir="ltr">{createdAccount.password || "الحساب موجود مسبقاً — استخدم إعادة التعيين"}</p>
                 </div>
               </div>
               <p className="text-xs text-emerald-700 mt-2">احفظ هذه البيانات لإعطائها للطالب</p>

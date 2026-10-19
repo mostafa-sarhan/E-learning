@@ -12,7 +12,6 @@ function Attendance() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [students, setStudents] = useState([]);
   const [attendance, setAttendance] = useState({});
-  const [savedAttendance, setSavedAttendance] = useState({});
   const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -81,13 +80,13 @@ function Attendance() {
       } else {
         showToast("فشل في تسجيل الدفع", "error");
       }
-    } catch (e) {
+    } catch {
       showToast("حدث خطأ أثناء تسجيل الدفع", "error");
     }
   };
 
   const loadData = useCallback(async () => {
-    if (!selectedGroup || !selectedDate) { setStudents([]); setAttendance({}); setSavedAttendance({}); setSaveStatus("saved"); return; }
+    if (!selectedGroup || !selectedDate) { setStudents([]); setAttendance({}); setSaveStatus("saved"); return; }
     setLoading(true); setError(null); setSaveStatus("saved");
     try {
       const resStudents = await fetch(`${API_BASE}/api/attendance/students/${selectedGroup}`);
@@ -104,7 +103,6 @@ function Attendance() {
       }
       studentsData.forEach(s => { if (!attMap[s._id]) attMap[s._id] = "absent"; });
       setAttendance(attMap);
-      setSavedAttendance(JSON.parse(JSON.stringify(attMap)));
     } catch (e) {
       setError(e instanceof Error ? e.message : "حدث خطأ أثناء تحميل البيانات");
     } finally { setLoading(false); }
@@ -131,10 +129,9 @@ function Attendance() {
           })
         )
       );
-      setSavedAttendance(JSON.parse(JSON.stringify(attendance)));
       setSaveStatus("saved");
       showToast(`تم حفظ الحضور لـ ${students.length} طالب بنجاح`, "success");
-    } catch (e) {
+    } catch {
       setSaveStatus("unsaved");
       showToast("فشل في حفظ الحضور", "error");
     } finally {
@@ -162,7 +159,7 @@ function Attendance() {
       } else {
         showToast(data.message || "فشل في إرسال الرسائل", "error");
       }
-    } catch (e) {
+    } catch {
       showToast("حدث خطأ أثناء الإرسال", "error");
     } finally {
       setSendingWhatsApp(false);
@@ -172,6 +169,8 @@ function Attendance() {
   useEffect(() => {
     if (saveStatus !== "unsaved" || students.length === 0 || saving) return;
     saveAll();
+    // Autosave only when attendance changes; other values are read from the same render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attendance]);
 
   const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];

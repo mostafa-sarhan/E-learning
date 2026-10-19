@@ -100,6 +100,14 @@ function WhatsAppService() {
             setError("فشل إنهاء الجلسة");
           }
         }}
+        onGenerateQR={async () => {
+          setError(null);
+          const res = await fetch(`${API_BASE}/api/whatsapp/generate-qr`, { method: "POST" });
+          const data = await res.json();
+          if (!data.success) {
+            setError("فشل إنشاء رمز QR");
+          }
+        }}
       />
 
       <RecentMessages messages={messages} loading={loadingMessages} />

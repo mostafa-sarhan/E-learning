@@ -75,7 +75,7 @@ function Schedule() {
       });
       if (res.ok) { resetForm(); fetchData(); }
       else { const d = await res.json(); alert(d.message || "فشل في الحفظ"); }
-    } catch (e) { alert("حدث خطأ"); }
+    } catch { alert("حدث خطأ"); }
     finally { setSubmitting(false); }
   };
 

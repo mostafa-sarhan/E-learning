@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from 'react';
+import { useState, createContext } from 'react';
 import './App.css';
 import Right from './componant/right';
 import Left from './componant/Left';
@@ -13,8 +13,13 @@ const AuthContext = createContext(null);
 
 function App() {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = JSON.parse(localStorage.getItem('user') || 'null');
+      // Sessions saved before token auth existed are no longer valid.
+      return saved?.token ? saved : null;
+    } catch {
+      return null;
+    }
   });
 
   const login = (userData) => {

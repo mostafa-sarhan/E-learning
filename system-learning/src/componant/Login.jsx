@@ -29,7 +29,7 @@ function Login({ onLogin }) {
       } else {
         setError(data.message || "فشل تسجيل الدخول");
       }
-    } catch (e) {
+    } catch {
       setError("حدث خطأ أثناء الاتصال بالخادم");
     } finally {
       setLoading(false);

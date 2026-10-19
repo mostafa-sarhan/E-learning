@@ -60,7 +60,7 @@ export async function createGroup(
 
   const newGroup = await GroupModel.create({
     name: payload.name!.trim(),
-    academicYear: payload.academicYear!.trim(),
+    academicYear: payload.academicYear!.trim() as any,
     days: payload.days!.map(d => d.trim()),
     time: payload.time!.trim(),
   });

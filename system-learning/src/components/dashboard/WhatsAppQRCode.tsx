@@ -1,11 +1,15 @@
 import { QRCodeSVG } from "qrcode.react";
 import type { QRCodeData } from "../../types/whatsapp";
+import { useState } from "react";
 
 interface Props {
   qrCode: QRCodeData | null;
+  onGenerateQR?: () => void;
 }
 
-function WhatsAppQRCode({ qrCode }: Props) {
+function WhatsAppQRCode({ qrCode, onGenerateQR }: Props) {
+  const [generating, setGenerating] = useState(false);
+
   if (!qrCode || !qrCode.qrValue) {
     return (
       <div className="flex flex-col items-center justify-center py-8">
@@ -17,6 +21,27 @@ function WhatsAppQRCode({ qrCode }: Props) {
         <p className="mt-4 text-sm text-slate-500 text-center">
           لا يوجد رمز QR متاح حالياً
         </p>
+        <button
+          onClick={async () => {
+            setGenerating(true);
+            try {
+              await onGenerateQR?.();
+            } finally {
+              setGenerating(false);
+            }
+          }}
+          disabled={generating}
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        >
+          {generating ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              جاري الإنشاء...
+            </>
+          ) : (
+            "انشاء QR"
+          )}
+        </button>
       </div>
     );
   }

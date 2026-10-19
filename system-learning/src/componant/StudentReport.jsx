@@ -28,7 +28,6 @@ function StudentReport() {
   const [students, setStudents] = useState([]);
   const [attendanceMap, setAttendanceMap] = useState({});
   const [paymentsMap, setPaymentsMap] = useState({});
-  const [exams, setExams] = useState([]);
   const [submissionsMap, setSubmissionsMap] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -68,7 +67,6 @@ function StudentReport() {
 
       if (examsRes.ok) {
         const examsData = await examsRes.json();
-        setExams(examsData);
 
         const submissionsMapData = {};
         await Promise.all(
@@ -230,7 +228,6 @@ function StudentReport() {
 
   if (selectedStudent) {
     const attendanceStats = getAttendanceStats(selectedStudent._id);
-    const paymentStats = getPaymentStats(selectedStudent._id);
     const examStats = getExamStats(selectedStudent._id);
 
     return (

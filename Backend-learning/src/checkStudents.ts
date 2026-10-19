@@ -17,7 +17,7 @@ async function check() {
   console.log("\nTotal student accounts:", studentUsers.length);
   studentUsers.forEach(u => {
     const s = u.studentId as any;
-    console.log("-", u.name, "| email:", u.email, "| password:", u.plainPassword, "| group:", s?.group?.name || "NO GROUP", "| year:", s?.academicYear);
+    console.log("-", u.name, "| email:", u.email, "| group:", s?.group?.name || "NO GROUP", "| year:", s?.academicYear);
   });
   
   await mongoose.disconnect();

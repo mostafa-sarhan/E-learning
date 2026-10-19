@@ -9,14 +9,6 @@ const GRADE_COLORS = {
   "الصف الثالث": { bg: "from-amber-500 to-orange-500", badge: "bg-amber-100 text-amber-700", light: "bg-amber-50", border: "border-amber-200", ring: "focus:ring-amber-500/20 focus:border-amber-500" },
 };
 
-function gradeShort(g) {
-  if (!g) return "";
-  if (g.includes("الاول")) return "1st";
-  if (g.includes("الثاني") || g.includes("الثانى")) return "2nd";
-  if (g.includes("الثالث")) return "3rd";
-  return g;
-}
-
 function extractVimeoId(input) {
   const trimmed = input?.trim() || "";
   const match = trimmed.match(/vimeo\.com\/(\d+)/);
