@@ -1,0 +1,16 @@
+node_modules
+dist
+test
+.env
+.env.*
+!.env.example
+.wwebjs_auth
+.wwebjs_cache
+.npm-cache
+*.log
+test-results.js
+.DS_Store
+Dockerfile
+.dockerignore
+README.md
+PROGRESS_API.md

@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 
 // In-memory counters: valid for a single backend process only.
-// Running multiple instances (PM2 cluster) requires a shared store such as Redis.
+// Running multiple instances (multiple containers or processes) requires a shared store such as Redis.
 // Authenticated requests are counted per user, so students sharing one classroom/NAT IP
 // do not exhaust each other's quota. Anonymous requests are counted per client IP.
 function userOrIpKey(req: Request): string {

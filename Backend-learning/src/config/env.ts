@@ -45,6 +45,9 @@ export const env = {
   whatsappEnabled: process.env.WHATSAPP_ENABLED !== "false",
   whatsappSessionPath: process.env.WHATSAPP_SESSION_PATH || ".wwebjs_auth",
   chromiumPath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+  // Chrome's own sandbox cannot start inside a hardened container (no setuid, all capabilities
+  // dropped); there the container is the isolation boundary. Set to "false" where the sandbox works.
+  chromeNoSandbox: process.env.CHROME_NO_SANDBOX !== "false",
   rateLimit: {
     windowMs: intEnv("RATE_LIMIT_WINDOW_MS", 15 * 60 * 1000),
     apiMax: intEnv("RATE_LIMIT_API_MAX", 1500),

@@ -69,7 +69,11 @@ async function startClient(): Promise<void> {
       puppeteer: {
         headless: true,
         executablePath: env.chromiumPath,
-        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
+        args: [
+          ...(env.chromeNoSandbox ? ["--no-sandbox", "--disable-setuid-sandbox"] : []),
+          "--disable-gpu",
+          "--disable-dev-shm-usage",
+        ],
       },
     });
 

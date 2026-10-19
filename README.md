@@ -26,6 +26,7 @@ cd system-learning && npm run lint && VITE_API_URL=https://academy.example.com n
 ```
 
 ## Production
-Self-hosted on a Linux VPS: Nginx (HTTPS, static frontend, `/api` reverse proxy),
-PM2 for the backend, MongoDB, and a persistent WhatsApp session directory.
+Docker Compose (`docker-compose.yml`, project `academy`): frontend (Nginx serving the SPA and
+proxying `/api`), backend (Node + Chromium for WhatsApp), and MongoDB, with persistent volumes.
+Host Nginx terminates HTTPS. Configure with `.env.example` → `.env`.
 See [`deploy/DEPLOYMENT.md`](deploy/DEPLOYMENT.md) and [`deploy/CHECKLIST.md`](deploy/CHECKLIST.md).

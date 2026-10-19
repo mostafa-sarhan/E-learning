@@ -1,141 +1,166 @@
-# Academy – Hostinger VPS Deployment
+# Academy – Docker Compose Deployment (shared VPS)
 
-The academy runs next to LearnGate without touching it. It gets its own directory,
-system user, PM2 process, port, MongoDB database/user and Nginx site file.
-Do not restart, reload or edit anything belonging to LearnGate. `nginx -t` followed
-by `reload` is the only shared action, and it is non-disruptive when the test passes.
+The academy runs as its own Compose project, **`academy`**. It has its own private network
+(`academy-net`), named volumes and localhost-only ports. It never joins other projects'
+networks, and these steps don't touch LearnGate, SkyTop, Portfolio or School Auth.
 
-Placeholders: `academy.example.com`, `<PORT>` (default 5000), `<DB_PASSWORD>`, `<repo-url>`.
-See `CHECKLIST.md` for what's done locally, what to configure, and what to verify after deploy.
-
-## 0. Pre-flight checks (read-only)
-```bash
-sudo ss -ltnp                         # list used ports; choose a free <PORT>, never assume 5000
-ls /etc/nginx/sites-enabled/          # confirm no existing site uses academy.example.com
-grep -R "academy_api" /etc/nginx/ || true   # limit_req zone name must be unique
-free -h                               # Chromium for WhatsApp needs ~500 MB–1 GB extra RAM
-node -v                               # Node.js 20+ required
+```
+client ─HTTPS─> host Nginx ─> 127.0.0.1:8084  academy-frontend (Nginx: SPA + /api proxy)
+                                                     │ academy-net (private)
+                                                     ├─> academy-backend:5000  (Node + Chromium)
+                                                     └─> academy-mongodb:27017 (no host port)
 ```
 
-## 1. System prerequisites (install only what is missing)
-- Node.js 20+, and PM2 (`sudo npm i -g pm2`). If LearnGate already uses PM2, keep using it.
-  The academy only adds one more process, `academy-api`.
-- **Chromium for WhatsApp (recommended: Google Chrome .deb, not the snap):**
-  ```bash
-  wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-  sudo apt install -y ./google-chrome-stable_current_amd64.deb fonts-noto-core
-  ```
-  With a system Chrome installed, Puppeteer's own browser download is skipped
-  (see step 3). This also avoids the vulnerable download/unzip code path described under Known risks.
-- **MongoDB:** either MongoDB Atlas, or a local `mongod` that listens on `127.0.0.1` only
-  (`net.bindIp: 127.0.0.1` in `/etc/mongod.conf`) with authorization enabled.
-  If LearnGate already uses a local MongoDB, do **not** change its config. Only add a new
-  database and user:
-  ```js
-  // mongosh as an admin
-  use academy
-  db.createUser({ user: "academy", pwd: "<DB_PASSWORD>", roles: [{ role: "readWrite", db: "academy" }] })
-  ```
-  Port 27017 must not be open in the firewall: `sudo ufw status` (no 27017 rule).
+Run every command from the repository directory. The Compose file sets `name: academy`, so
+all commands are scoped to the academy project.
+**Never use** `docker system prune`, `docker volume prune` or `docker compose down -v`.
 
-## 2. Directories and user
+Placeholders: `academy.example.com`, `/opt/academy`, `<repo-url>`.
+
+## 1. Pre-flight (read-only)
 ```bash
-sudo adduser --system --group --home /var/www/academy academy
-sudo mkdir -p /var/www/academy /var/lib/academy/wwebjs_auth
-sudo chown -R academy:academy /var/www/academy /var/lib/academy
-sudo chmod 700 /var/lib/academy/wwebjs_auth
+docker --version && docker compose version   # Compose v2 required
+sudo ss -ltnp | grep -E ':8084|:5000'        # if a port is taken, choose another in .env
+docker network ls | grep academy-net         # must not exist yet, or must belong to this project
+docker volume ls | grep academy-             # same
+free -h                                      # backend (Chromium) may use up to 1.5 GB
 ```
-`/var/lib/academy/wwebjs_auth` lies outside the code directory, so the WhatsApp session
-survives restarts and redeploys.
 
-## 3. Backend
+## 2. Initial deployment
 ```bash
-sudo -u academy -H bash
-cd /var/www/academy && git clone <repo-url> app && cd app/Backend-learning
+sudo mkdir -p /opt/academy && sudo chown $USER /opt/academy
+git clone <repo-url> /opt/academy && cd /opt/academy
 cp .env.example .env && chmod 600 .env
-#   Edit .env and set:
-#   NODE_ENV=production  HOST=127.0.0.1  PORT=<PORT>
-#   MONGO_URI=mongodb://academy:<DB_PASSWORD>@127.0.0.1:27017/academy?authSource=academy
-#   JWT_SECRET=$(openssl rand -hex 48)
-#   CORS_ORIGINS=https://academy.example.com   TRUST_PROXY=1
-#   (the server refuses to start in production without MONGO_URI, JWT_SECRET >= 32 chars, CORS_ORIGINS)
-#   WHATSAPP_SESSION_PATH=/var/lib/academy/wwebjs_auth
-#   PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
-PUPPETEER_SKIP_DOWNLOAD=true npm ci --include=dev   # dev deps (TypeScript) are needed to build
-npm run build
-npm prune --omit=dev
-pm2 start ecosystem.config.js
-pm2 save
-curl -s http://127.0.0.1:<PORT>/api/health
 ```
-Keep **one** instance (`fork` mode). The WhatsApp client and the in-memory rate-limit
-counters are per process. Running several instances would need a shared Redis store
-(`rate-limit-redis`) and a single dedicated WhatsApp worker.
+Edit `.env`. Compose reads it automatically for `${...}` interpolation; no other env file is needed.
 
-Boot persistence: if PM2 is not already set up to start at boot for the `academy` user,
-run `pm2 startup` and execute the command it prints. This does not affect other users' PM2.
-For log rotation, `pm2 install pm2-logrotate` (skip it if already installed).
+| Variable | Value |
+|---|---|
+| `MONGO_ROOT_PASSWORD`, `MONGO_APP_PASSWORD` | `openssl rand -hex 24` (hex: safe in the MongoDB URI) |
+| `JWT_SECRET` | `openssl rand -hex 48` |
+| `CORS_ORIGINS` | `https://academy.example.com` |
+| `ACADEMY_FRONTEND_PORT` / `ACADEMY_BACKEND_PORT` | free localhost ports (default 8084 / 5000) |
+| `VITE_API_URL` | leave empty (same-origin `/api`) |
 
-### First admin account (fresh database only)
+Generate secrets straight into the file so they never show up on screen or in shell history:
 ```bash
-SEED_ADMIN_EMAIL=admin@academy.example.com SEED_ADMIN_PASSWORD='<12+ chars>' \
-  node -r dotenv/config dist/seedAdmin.js
+sed -i "s/^JWT_SECRET=.*/JWT_SECRET=$(openssl rand -hex 48)/" .env
+sed -i "s/^MONGO_ROOT_PASSWORD=.*/MONGO_ROOT_PASSWORD=$(openssl rand -hex 24)/" .env
+sed -i "s/^MONGO_APP_PASSWORD=.*/MONGO_APP_PASSWORD=$(openssl rand -hex 24)/" .env
 ```
 
-### Legacy plaintext passwords (existing database only)
-Older versions stored a `plainPassword` field. Login never used it (the bcrypt hash
-in `password` is used), and the API no longer reads or returns it. To delete it:
+Build and start:
 ```bash
-mongodump --uri="$MONGO_URI" --out=/var/backups/academy-$(date +%F)   # 1. backup
-node dist/scripts/removePlainPasswords.js                                # 2. dry run (count)
-node dist/scripts/removePlainPasswords.js --apply                        # 3. remove
+export ACADEMY_IMAGE_TAG=$(git rev-parse --short HEAD)
+docker compose config --quiet          # validates .env and the Compose file
+docker compose build
+docker compose up -d
+docker compose ps                      # all three services should become "healthy"
 ```
-Existing student passwords keep working. Admins can no longer view them. They use
-**Reset password** on the Student Accounts page, which shows a new password once.
+MongoDB runs `deploy/mongo-init/` only on its **first** start, when the volume is empty. That creates
+the least-privilege `MONGO_APP_USER`. Changing the passwords in `.env` later does not change the users
+already in the database.
 
-## 4. Frontend
+First admin account (fresh database only). `read -s` keeps the password out of history:
 ```bash
-cd /var/www/academy/app/system-learning
-echo "VITE_API_URL=https://academy.example.com" > .env.production   # build fails if missing
-npm ci --include=dev && npm run build
-mkdir -p /var/www/academy/frontend
-rsync -a --delete dist/ /var/www/academy/frontend/
+read -rp "Admin email: " E; read -rsp "Admin password (12+ chars): " P; echo
+docker compose exec -e SEED_ADMIN_EMAIL="$E" -e SEED_ADMIN_PASSWORD="$P" academy-backend node dist/seedAdmin.js
+unset E P
 ```
 
-## 5. Nginx + HTTPS
+## 3. Host Nginx + HTTPS
 ```bash
-sudo cp /var/www/academy/app/deploy/nginx-academy.conf /etc/nginx/sites-available/academy
-sudo nano /etc/nginx/sites-available/academy          # replace domain and <PORT>
+sudo cp deploy/nginx-academy.conf /etc/nginx/sites-available/academy
+sudo nano /etc/nginx/sites-available/academy     # set server_name and the frontend port
 sudo ln -s /etc/nginx/sites-available/academy /etc/nginx/sites-enabled/academy
-sudo nginx -t && sudo systemctl reload nginx          # reload only if the test passes
-sudo certbot --nginx -d academy.example.com
+sudo nginx -t && sudo systemctl reload nginx     # reload only if the test passes
+sudo certbot --nginx -d academy.example.com      # DNS A record must point to the VPS first
 ```
-Point the domain's DNS A record at the VPS before running certbot.
 
-## 6. WhatsApp
-Log in as staff, open the WhatsApp page and scan the QR code. The session is stored in
-`WHATSAPP_SESSION_PATH`. Back that folder up, and never commit or share it.
-To run without WhatsApp, set `WHATSAPP_ENABLED=false`.
-
-## 7. Updates
+## 4. Health checks and logs
 ```bash
-cd /var/www/academy/app && git pull
-cd Backend-learning && PUPPETEER_SKIP_DOWNLOAD=true npm ci --include=dev && npm run build && npm prune --omit=dev && pm2 restart academy-api
-cd ../system-learning && npm ci --include=dev && npm run build && rsync -a --delete dist/ /var/www/academy/frontend/
+docker compose ps
+curl -fsS http://127.0.0.1:8084/healthz              # frontend container
+curl -fsS http://127.0.0.1:8084/api/health           # backend through the frontend proxy
+curl -fsS https://academy.example.com/api/health     # full path through host Nginx
+docker compose logs -f --tail=100 academy-backend
+docker compose logs --tail=100 academy-frontend academy-mongodb
+```
+Logs are rotated by Docker (10 MB × 5 files per container). The app never logs secrets, QR codes or phone numbers.
+
+## 5. WhatsApp
+Log in as staff, open the WhatsApp page and scan the QR code. The session is stored in the
+`academy-whatsapp-session` volume, so it survives restarts, rebuilds and updates. Set
+`WHATSAPP_ENABLED=false` to run without WhatsApp. Chromium runs without its internal sandbox
+(`CHROME_NO_SANDBOX=true`) because the hardened container blocks it. The container itself is
+the isolation boundary: non-root, all capabilities dropped, `no-new-privileges`.
+
+## 6. Safe update workflow
+```bash
+cd /opt/academy
+./deploy/backup.sh                               # MongoDB + WhatsApp session backup (section 7)
+docker compose images                            # note the current tag for rollback
+git pull
+export ACADEMY_IMAGE_TAG=$(git rev-parse --short HEAD)
+docker compose build
+docker compose up -d                             # recreates changed services; volumes are kept
+docker compose ps
 ```
 
-## Auth notes
-- Every API route except `/api/health` and `/api/auth/login` requires a JWT (default lifetime 12h).
-  Users must log in again after the first deploy.
-- Student passwords are shown once, when the account is created or reset. They are stored only as bcrypt hashes.
+## 7. Backup and restore
+`./deploy/backup.sh` writes to `backups/` (git-ignored). It runs the following:
+```bash
+mkdir -p backups && chmod 700 backups
+# MongoDB: credentials stay inside the container (read from its environment)
+docker compose exec -T academy-mongodb sh -c \
+  'mongodump --archive --gzip -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --db "$MONGO_APP_DB"' \
+  > backups/mongo-$(date +%F-%H%M).archive.gz
+
+# WhatsApp session: stop the backend briefly for a consistent copy
+docker compose stop academy-backend
+docker run --rm -v academy-whatsapp-session:/src:ro -v "$PWD/backups":/backup alpine:3.20 \
+  tar czf /backup/whatsapp-$(date +%F-%H%M).tgz -C /src .
+docker compose start academy-backend
+```
+Copy backups off the server regularly.
+
+Restore MongoDB. **This replaces the academy collections.** Take a fresh backup first:
+```bash
+docker compose exec -T academy-mongodb sh -c \
+  'mongorestore --archive --gzip --drop -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --nsInclude="$MONGO_APP_DB.*"' \
+  < backups/mongo-YYYY-MM-DD-HHMM.archive.gz
+```
+Restore the WhatsApp session:
+```bash
+docker compose stop academy-backend
+docker run --rm -v academy-whatsapp-session:/dst -v "$PWD/backups":/backup:ro alpine:3.20 \
+  sh -c 'rm -rf /dst/* && tar xzf /backup/whatsapp-YYYY-MM-DD-HHMM.tgz -C /dst && chown -R 1000:1000 /dst'
+docker compose start academy-backend
+```
+
+## 8. Rollback
+Images are tagged with the commit hash, and earlier tags stay on the host.
+```bash
+docker image ls | grep academy-                  # find the previous tag
+git checkout <previous-commit>                   # keeps compose/config consistent with the images
+export ACADEMY_IMAGE_TAG=<previous-tag>
+docker compose up -d --no-build
+```
+If the release changed data, also restore the MongoDB backup taken before the update (section 7).
+To free space, remove only specific old academy images (`docker image rm academy-backend:<old-tag>`). Never prune.
+
+## 9. One-off maintenance
+```bash
+# Remove legacy plaintext passwords (databases migrated from older versions):
+docker compose exec academy-backend node dist/scripts/removePlainPasswords.js          # dry run
+docker compose exec academy-backend node dist/scripts/removePlainPasswords.js --apply  # after a backup
+# Stop the stack (volumes are kept):
+docker compose down
+```
 
 ## Known risks
-- `whatsapp-web.js@1.34.7` pins `puppeteer@24.38.0`. `npm audit` reports 9 high advisories,
-  all inside Puppeteer's *browser download* tooling (`@puppeteer/browsers` → `extract-zip`
-  symlink traversal, and `proxy-agent` → `basic-ftp` ReDoS). No patched Puppeteer 24.x exists.
-  The fix is Puppeteer 25 (a breaking change that whatsapp-web.js doesn't support), and
-  `extract-zip` has no fix at all. Mitigations: install with `PUPPETEER_SKIP_DOWNLOAD=true`
-  and use the system Chrome, so the vulnerable unzip path never runs. Don't configure
-  FTP/PAC proxies. Re-check when whatsapp-web.js releases an update.
-- whatsapp-web.js automates WhatsApp Web, which WhatsApp does not officially support.
-  The number can be banned. Use a dedicated number.
+- `whatsapp-web.js` pins Puppeteer 24, which has 9 high `npm audit` advisories in its
+  browser download tooling. The image never downloads a browser (`PUPPETEER_SKIP_DOWNLOAD=true`,
+  Debian Chromium is used instead), so that code path doesn't run.
+- whatsapp-web.js is unofficial, and WhatsApp may ban the number. Use a dedicated number.
+- Rate-limit counters are in memory: run a single backend replica.

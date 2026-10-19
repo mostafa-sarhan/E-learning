@@ -10,5 +10,5 @@ npm run lint
 npm run build            # production build into dist/ (requires VITE_API_URL)
 ```
 
-In production, `dist/` is served as static files by Nginx (see `../deploy/DEPLOYMENT.md`).
-`VITE_API_URL` is embedded at build time, so set it in `.env.production` before building.
+In production the `Dockerfile` builds `dist/` and serves it with Nginx, which also proxies `/api`
+to the backend (`docker/nginx.conf`). `VITE_API_URL` is embedded at build time; empty = same-origin.

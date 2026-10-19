@@ -1,0 +1,113 @@
+# Educational Academy – production stack.
+# All commands must include the project scope, e.g. `docker compose -p academy ...`
+# (the `name:` below already sets it when run from this directory).
+name: academy
+
+x-hardening: &hardening
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "5"
+
+services:
+  academy-mongodb:
+    <<: *hardening
+    image: mongo:8.0
+    container_name: academy-mongodb
+    command: ["mongod", "--bind_ip_all", "--auth"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:?set MONGO_ROOT_USERNAME in .env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set MONGO_ROOT_PASSWORD in .env}
+      MONGO_APP_DB: ${MONGO_APP_DB:-academy}
+      MONGO_APP_USER: ${MONGO_APP_USER:?set MONGO_APP_USER in .env}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:?set MONGO_APP_PASSWORD in .env}
+    volumes:
+      - academy-mongo-data:/data/db
+      - ./deploy/mongo-init:/docker-entrypoint-initdb.d:ro
+    # No `ports:` – reachable only on the private academy network.
+    networks: [academy-net]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--norc", "--eval", "quit(db.adminCommand({ ping: 1 }).ok ? 0 : 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 1g }
+
+  academy-backend:
+    <<: *hardening
+    build:
+      context: ./Backend-learning
+    image: academy-backend:${ACADEMY_IMAGE_TAG:-latest-local}
+    container_name: academy-backend
+    init: true            # reaps Chromium child processes; forwards SIGTERM for graceful shutdown
+    cap_drop: [ALL]
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "5000"
+      MONGO_URI: mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@academy-mongodb:27017/${MONGO_APP_DB:-academy}?authSource=${MONGO_APP_DB:-academy}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-12h}
+      CORS_ORIGINS: ${CORS_ORIGINS:?set CORS_ORIGINS in .env}
+      # Client -> host Nginx -> frontend Nginx -> backend
+      TRUST_PROXY: "2"
+      WHATSAPP_ENABLED: ${WHATSAPP_ENABLED:-true}
+      WHATSAPP_SESSION_PATH: /data/wwebjs_auth
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+      CHROME_NO_SANDBOX: ${CHROME_NO_SANDBOX:-true}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_API_MAX: ${RATE_LIMIT_API_MAX:-1500}
+      RATE_LIMIT_AUTH_MAX: ${RATE_LIMIT_AUTH_MAX:-20}
+      RATE_LIMIT_SENSITIVE_MAX: ${RATE_LIMIT_SENSITIVE_MAX:-30}
+      RATE_LIMIT_WHATSAPP_MAX: ${RATE_LIMIT_WHATSAPP_MAX:-20}
+    volumes:
+      - academy-whatsapp-session:/data/wwebjs_auth
+    shm_size: "256mb"     # Chromium shared memory
+    ports:
+      # Localhost only; optional (the public path is host Nginx -> frontend -> /api).
+      - "127.0.0.1:${ACADEMY_BACKEND_PORT:-5000}:5000"
+    networks: [academy-net]
+    depends_on:
+      academy-mongodb:
+        condition: service_healthy
+    stop_grace_period: 20s
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 1536m }
+
+  academy-frontend:
+    <<: *hardening
+    build:
+      context: ./system-learning
+      args:
+        VITE_API_URL: ${VITE_API_URL:-}
+    image: academy-frontend:${ACADEMY_IMAGE_TAG:-latest-local}
+    container_name: academy-frontend
+    cap_drop: [ALL]
+    ports:
+      - "127.0.0.1:${ACADEMY_FRONTEND_PORT:-8084}:8080"
+    networks: [academy-net]
+    depends_on:
+      academy-backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 128m }
+
+networks:
+  academy-net:
+    name: academy-net
+    driver: bridge
+
+volumes:
+  academy-mongo-data:
+    name: academy-mongo-data
+  academy-whatsapp-session:
+    name: academy-whatsapp-session
