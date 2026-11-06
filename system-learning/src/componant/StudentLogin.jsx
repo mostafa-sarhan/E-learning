@@ -39,7 +39,7 @@ function StudentLogin({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex" dir="rtl">
+    <div className="theme-keep min-h-screen bg-slate-950 flex" dir="rtl">
       {/* Left panel - branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 flex-col justify-between p-12">
         <div className="absolute inset-0 opacity-10">

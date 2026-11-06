@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import Select from "../components/Select";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -540,7 +541,7 @@ const [whatsAppSent, setWhatsAppSent] = useState(() => {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg">
+        <div className="theme-keep bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg">
           <div className="flex items-center justify-between">
             <div><p className="text-xs text-slate-400 font-medium">إجمالي الامتحانات</p><p className="text-2xl font-bold mt-1">{exams.length}</p></div>
             <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center">
@@ -596,9 +597,9 @@ const [whatsAppSent, setWhatsAppSent] = useState(() => {
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1.5">الصف الدراسي</label>
-                <select required value={formGrade} onChange={e => setFormGrade(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none bg-white transition focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                <Select required value={formGrade} onChange={e => setFormGrade(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none bg-white transition focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                   {GRADES.map(g => <option key={g} value={g}>{gradeShort(g)}</option>)}
-                </select>
+                </Select>
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1.5">تاريخ الامتحان</label>

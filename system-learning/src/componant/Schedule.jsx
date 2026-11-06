@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import Select from "../components/Select";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -123,9 +124,9 @@ function Schedule() {
           <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6 items-end">
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5">اليوم</label>
-              <select value={formDay} onChange={e => setFormDay(Number(e.target.value))} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
+              <Select value={formDay} onChange={e => setFormDay(Number(e.target.value))} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
                 {DAYS_AR.map((d, i) => <option key={i} value={i}>{d}</option>)}
-              </select>
+              </Select>
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5">من</label>
@@ -137,10 +138,10 @@ function Schedule() {
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5">المجموعة</label>
-              <select value={formGroup} onChange={e => setFormGroup(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
+              <Select value={formGroup} onChange={e => setFormGroup(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
                 <option value="">اختر</option>
                 {groups.map(g => <option key={g._id} value={g._id}>{g.name}</option>)}
-              </select>
+              </Select>
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5">المادة</label>

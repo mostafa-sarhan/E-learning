@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import Select from "../components/Select";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -108,10 +109,10 @@ function AdminUsers() {
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5">الدور</label>
-              <select value={formRole} onChange={e => setFormRole(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
+              <Select value={formRole} onChange={e => setFormRole(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
                 <option value="employee">موظف</option>
                 <option value="admin">مدير</option>
-              </select>
+              </Select>
             </div>
             <div className="flex gap-2">
               <button type="submit" disabled={submitting} className="flex-1 bg-indigo-600 text-white font-semibold text-sm px-4 py-3 rounded-xl hover:bg-indigo-700 transition disabled:opacity-60">{submitting ? "..." : "حفظ"}</button>
@@ -149,10 +150,10 @@ function AdminUsers() {
                     </td>
                     <td className="px-5 py-4 text-slate-600 font-mono text-xs" dir="ltr">{u.email}</td>
                     <td className="px-5 py-4">
-                      <select value={u.role} onChange={e => handleChangeRole(u._id, e.target.value)} className={`rounded-full px-3 py-1 text-xs font-bold border-0 cursor-pointer outline-none ${roleBadge(u.role)}`}>
+                      <Select value={u.role} onChange={e => handleChangeRole(u._id, e.target.value)} className={`rounded-full px-3 py-1 text-xs font-bold border-0 cursor-pointer outline-none ${roleBadge(u.role)}`}>
                         <option value="admin">مدير</option>
                         <option value="employee">موظف</option>
-                      </select>
+                      </Select>
                     </td>
                     <td className="px-5 py-4">
                       <button onClick={() => handleDelete(u._id)} className="text-xs text-red-500 hover:text-red-700">حذف</button>

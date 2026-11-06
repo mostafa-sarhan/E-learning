@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#4f46e5" />
+    <script>
+      // Apply the saved or system theme before first paint (no light flash). Kept in sync with src/utils/theme.js.
+      (function () {
+        var theme = null;
+        try { theme = localStorage.getItem("theme"); } catch (e) {}
+        if (theme !== "dark" && theme !== "light") {
+          theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
     <meta name="description" content="أكاديمية التعليم — نظام إدارة الطلاب والمحاضرات والامتحانات" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com">

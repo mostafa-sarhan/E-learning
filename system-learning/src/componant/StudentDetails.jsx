@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { getRateForYear } from "../utils/rates";
+import Select from "../components/Select";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -237,7 +238,7 @@ function StudentDetails({ student, onBack }) {
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1">عن شهر</label>
-                <select 
+                <Select 
                   value={paymentMonth}
                   onChange={e => setPaymentMonth(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-emerald-200 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
@@ -246,7 +247,7 @@ function StudentDetails({ student, onBack }) {
                   {months.slice(0, now.getMonth() + 1).map(m => (
                     <option key={m} value={m}>{m}</option>
                   ))}
-                </select>
+                </Select>
               </div>
               <button 
                 type="submit"

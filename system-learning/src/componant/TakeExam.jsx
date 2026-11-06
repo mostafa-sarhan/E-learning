@@ -89,7 +89,7 @@ function TakeExam({ exam, student, onBack, onSubmit }) {
   /* ==================== PRE-START SCREEN ==================== */
   if (!started) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4" dir="rtl">
+      <div className="theme-keep min-h-screen bg-slate-950 flex items-center justify-center p-4" dir="rtl">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-indigo-600/10 blur-3xl"></div>
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-blue-600/10 blur-3xl"></div>

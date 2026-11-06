@@ -227,7 +227,7 @@ function StudentProgressDetail({ student, onBack }) {
 
         {/* Last Accessed Lesson */}
         {progressData?.lastAccessedLesson && (
-          <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-5 mb-6 text-white shadow-xl">
+          <div className="theme-keep bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-5 mb-6 text-white shadow-xl">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/20 backdrop-blur-sm flex items-center justify-center">
                 <span className="text-sm">▶️</span>

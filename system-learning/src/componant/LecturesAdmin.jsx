@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import Select from "../components/Select";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -29,7 +30,7 @@ function VimeoThumbnail({ vimeoId, title, onPlay }) {
   }, [id]);
 
   return (
-    <div className="relative w-full aspect-video rounded-xl bg-slate-900 overflow-hidden cursor-pointer group" onClick={onPlay}>
+    <div className="theme-keep relative w-full aspect-video rounded-xl bg-slate-900 overflow-hidden cursor-pointer group" onClick={onPlay}>
       {!error && loaded && (
         <img src={`https://vumbnail.com/${id}.jpg`} alt={title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
       )}
@@ -65,7 +66,7 @@ function VideoModal({ vimeoId, title, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div className="relative w-full max-w-4xl bg-slate-900 rounded-2xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="theme-keep relative w-full max-w-4xl bg-slate-900 rounded-2xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-3 border-b border-slate-700">
           <h3 className="text-white font-semibold text-sm truncate ml-3">{title}</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition flex-shrink-0">
@@ -343,7 +344,7 @@ export default function LecturesAdmin() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg">
+        <div className="theme-keep bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-slate-400 font-medium">إجمالي المحاضرات</p>
@@ -379,10 +380,10 @@ export default function LecturesAdmin() {
           <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="بحث بالاسم أو الوصف أو الوحدة..." className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 bg-white" />
         </div>
-        <select value={filterYear} onChange={e => setFilterYear(e.target.value)} className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 bg-white sm:w-44">
+        <Select value={filterYear} onChange={e => setFilterYear(e.target.value)} className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 bg-white sm:w-44">
           <option value="">كل الصفوف</option>
           {GRADES.map(y => <option key={y} value={y}>{gradeShort(y)}</option>)}
-        </select>
+        </Select>
       </div>
 
       {/* Add/Edit Form */}
@@ -410,17 +411,17 @@ export default function LecturesAdmin() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1.5">الصف الدراسي</label>
-                  <select value={formGrade} onChange={e => { setFormGrade(e.target.value); setFormUnit(""); }} className={`w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none bg-white transition ${GRADE_COLORS[formGrade].ring}`}>
+                  <Select value={formGrade} onChange={e => { setFormGrade(e.target.value); setFormUnit(""); }} className={`w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none bg-white transition ${GRADE_COLORS[formGrade].ring}`}>
                     {GRADES.map(y => <option key={y} value={y}>{gradeShort(y)}</option>)}
-                  </select>
+                  </Select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1.5">الوحدة الدراسية</label>
                   <div className="flex gap-2">
-                    <select value={formUnit} onChange={e => setFormUnit(e.target.value)} className={`flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none bg-white transition ${GRADE_COLORS[formGrade].ring}`}>
+                    <Select value={formUnit} onChange={e => setFormUnit(e.target.value)} className={`flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none bg-white transition ${GRADE_COLORS[formGrade].ring}`}>
                       <option value="">بدون وحدة</option>
                       {unitsByGrade[formGrade]?.map(u => <option key={u} value={u}>{u}</option>)}
-                    </select>
+                    </Select>
                     <button type="button" onClick={() => setShowUnitModal(true)} className="shrink-0 px-3 py-2 rounded-xl bg-violet-100 text-violet-700 text-sm font-semibold hover:bg-violet-200 transition flex items-center gap-1.5" title="إنشاء وحدة جديدة">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
                     </button>

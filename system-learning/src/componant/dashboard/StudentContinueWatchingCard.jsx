@@ -13,7 +13,7 @@ function ContinueWatchingCard({ lesson, progress, onContinue }) {
   const unitName = lesson.section || "بدون وحدة";
 
   return (
-    <div className="mb-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-2xl overflow-hidden shadow-xl shadow-slate-300/30 group hover:shadow-2xl hover:shadow-slate-400/40 transition-all duration-300">
+    <div className="theme-keep mb-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-2xl overflow-hidden shadow-xl shadow-slate-300/30 group hover:shadow-2xl hover:shadow-slate-400/40 transition-all duration-300">
       <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 relative">
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 

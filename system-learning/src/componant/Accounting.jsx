@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { getStoredRates, setStoredRates } from "../utils/rates";
+import Select from "../components/Select";
 
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
@@ -136,7 +137,7 @@ function Accounting() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             أسعار الاشتراكات
           </button>
-          <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center gap-2 rounded-xl bg-slate-800 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900">
+          <button onClick={() => setShowForm(!showForm)} className="theme-keep inline-flex items-center gap-2 rounded-xl bg-slate-800 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
             مصروف جديد
           </button>
@@ -167,7 +168,7 @@ function Accounting() {
             </div>
           </div>
         </div>
-        <div className={`rounded-2xl border p-5 shadow-sm ${netProfit >= 0 ? 'bg-gradient-to-br from-emerald-600 to-green-700 text-white' : 'bg-gradient-to-br from-red-600 to-rose-700 text-white'}`}>
+        <div className={`rounded-2xl border border-transparent p-5 shadow-sm ${netProfit >= 0 ? 'bg-gradient-to-br from-emerald-600 to-green-700 text-white' : 'bg-gradient-to-br from-red-600 to-rose-700 text-white'}`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -290,10 +291,10 @@ function Accounting() {
         <div className="p-4 border-b border-slate-100 bg-slate-50/80 flex flex-wrap justify-between items-center gap-3">
           <h2 className="font-bold text-slate-800">سجل الاشتراكات</h2>
           <div className="flex items-center gap-2">
-            <select value={filterMonth} onChange={e => setFilterMonth(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white">
+            <Select value={filterMonth} onChange={e => setFilterMonth(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white">
               <option value="">كل الشهور</option>
               {availableMonths.map(m => (<option key={m} value={m}>{m}</option>))}
-            </select>
+            </Select>
             {filterMonth && (
               <button onClick={() => setFilterMonth("")} className="text-xs text-slate-400 hover:text-slate-600">✕</button>
             )}

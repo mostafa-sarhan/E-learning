@@ -16,7 +16,7 @@ function Toast({ message, type, onClose }) {
   if (!message) return null;
   const bgColor = type === "error" ? "bg-rose-500" : type === "success" ? "bg-emerald-500" : "bg-slate-800";
   return (
-    <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 ${bgColor} text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-slide-down`}>
+    <div className={`theme-keep fixed top-4 left-1/2 -translate-x-1/2 z-50 ${bgColor} text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-slide-down`}>
       <span className="text-sm font-medium">{message}</span>
       <button onClick={onClose} className="text-white/80 hover:text-white">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -312,7 +312,7 @@ function StudentDashboard({ student, onLogout }) {
     const progress = getProgress(selectedLecture._id);
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" dir="rtl">
+      <div className="theme-keep min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" dir="rtl">
         <div className="bg-slate-900/80 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-20">
           <button onClick={() => setSelectedLecture(null)} className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition">
             <svg className="w-5 h-5 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>

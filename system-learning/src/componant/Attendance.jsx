@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import StudentDetails from "./StudentDetails";
 import { getRateForYear } from "../utils/rates";
+import Select from "../components/Select";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -214,17 +215,17 @@ function Attendance() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">الصف الدراسي</label>
-            <select value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
+            <Select value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
               <option value="">كل الصفوف</option>
               {availableTerms.map(term => (<option key={term} value={term}>{term}</option>))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">المجموعة</label>
-            <select value={selectedGroup} disabled={!searchTerm && availableTerms.length > 0} onChange={e => setSelectedGroup(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50 disabled:opacity-50">
+            <Select value={selectedGroup} disabled={!searchTerm && availableTerms.length > 0} onChange={e => setSelectedGroup(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50 disabled:opacity-50">
               <option value="">اختر المجموعة</option>
               {filteredGroups.map(g => (<option key={g._id} value={g._id}>{g.name}</option>))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">التاريخ</label>
@@ -232,11 +233,11 @@ function Attendance() {
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">فلترة بالحالة</label>
-            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
+            <Select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
               <option value="all">عرض الكل</option>
               <option value="present">حاضر فقط</option>
               <option value="absent">غائب فقط</option>
-            </select>
+            </Select>
           </div>
           <div className="flex items-end gap-2">
             <button
@@ -458,9 +459,9 @@ function Attendance() {
             <div className="p-5 space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1.5">الشهر</label>
-                <select value={payMonth} onChange={e => setPayMonth(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-slate-50/50">
+                <Select value={payMonth} onChange={e => setPayMonth(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-slate-50/50">
                   {months.map(m => (<option key={m} value={m}>{m}</option>))}
-                </select>
+                </Select>
               </div>
 
               <div>

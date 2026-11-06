@@ -1,4 +1,4 @@
-import { useState, createContext } from 'react';
+import { useState, useEffect, createContext } from 'react';
 import './App.css';
 import Right from './componant/right';
 import Left from './componant/Left';
@@ -11,25 +11,51 @@ import StudentReport from './componant/StudentReport';
 
 const AuthContext = createContext(null);
 
+function readSavedUser() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('user') || 'null');
+    // Sessions saved before token auth existed are no longer valid.
+    return saved?.token ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
 function App() {
-  const [user, setUser] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('user') || 'null');
-      // Sessions saved before token auth existed are no longer valid.
-      return saved?.token ? saved : null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState(readSavedUser);
+
+  // Drop in-memory sessions that no longer exist in storage: pages restored by Back from the
+  // browser's back/forward cache after logout, and logouts in another tab.
+  useEffect(() => {
+    const onPageShow = (e) => {
+      if (e.persisted && !readSavedUser()) setUser(null);
+    };
+    const onStorage = (e) => {
+      if (e.key === 'user' || e.key === null) setUser(readSavedUser());
+    };
+    window.addEventListener('pageshow', onPageShow);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
 
   const login = (userData) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  // Clears every place a session is kept: staff session (localStorage) and the
+  // student-portal session (sessionStorage). Theme and app settings are not session data.
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    try {
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('student_session');
+    } catch {
+      // Storage unavailable: in-memory state is already cleared.
+    }
   };
 
   return (
@@ -50,7 +76,7 @@ function App() {
               </div>
             </div>
           ) : (
-            <Navigate to="/login" />
+            <Navigate to="/login" replace />
           )
         } />
       </Routes>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Select from "../components/Select";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -145,17 +146,17 @@ function NewStudent({ onSuccess }) {
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">الصف الدراسي</label>
-            <select name="academicYear" value={form.academicYear} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
+            <Select name="academicYear" value={form.academicYear} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
               <option value="">اختر الصف</option>
               {ACADEMIC_GRADE_OPTIONS.map(g => (<option key={g} value={g}>{g}</option>))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">المجموعة (اختياري)</label>
-            <select name="group" value={form.group} onChange={handleChange} disabled={!form.academicYear} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50 disabled:opacity-50">
+            <Select name="group" value={form.group} onChange={handleChange} disabled={!form.academicYear} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50 disabled:opacity-50">
               <option value="">اختر المجموعة</option>
               {groups.filter(g => g.academicYear === form.academicYear).map(g => (<option key={g._id} value={g._id}>{g.name}</option>))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">تاريخ الميلاد</label>
@@ -163,10 +164,10 @@ function NewStudent({ onSuccess }) {
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">الحالة</label>
-            <select name="status" value={form.status} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
+            <Select name="status" value={form.status} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
               <option value="active">نشط</option>
               <option value="inactive">غير نشط</option>
-            </select>
+            </Select>
           </div>
           <div className="sm:col-span-2 lg:col-span-3 flex justify-end pt-2">
             <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-60">

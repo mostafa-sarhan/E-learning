@@ -197,7 +197,7 @@ function Home() {
                   <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
               <XAxis dataKey="month" stroke="#94a3b8" tick={{ fontSize: 11 }} />
               <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} />
               <Tooltip
@@ -246,6 +246,7 @@ function Home() {
                     outerRadius={80}
                     paddingAngle={5}
                     dataKey="value"
+                    stroke="var(--surface)"
                   >
                     {groupDistribution.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -283,7 +284,7 @@ function Home() {
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={attendanceData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
               <XAxis dataKey="day" stroke="#94a3b8" tick={{ fontSize: 10 }} />
               <YAxis stroke="#94a3b8" tick={{ fontSize: 10 }} />
               <Tooltip

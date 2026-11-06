@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import Select from "../components/Select";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -614,7 +615,7 @@ function StudentReport() {
               className="w-full pr-11 pl-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition"
             />
           </div>
-          <select
+          <Select
             value={selectedYear}
             onChange={(e) => { setSelectedYear(e.target.value); setSelectedGroup(""); }}
             className="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition min-w-[140px]"
@@ -623,8 +624,8 @@ function StudentReport() {
             {availableYears.map(year => (
               <option key={year} value={year}>{year}</option>
             ))}
-          </select>
-          <select
+          </Select>
+          <Select
             value={selectedGroup}
             onChange={(e) => setSelectedGroup(e.target.value)}
             className="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition min-w-[140px]"
@@ -633,8 +634,8 @@ function StudentReport() {
             {availableGroups.map(([id, name]) => (
               <option key={id} value={id}>{name}</option>
             ))}
-          </select>
-          <select
+          </Select>
+          <Select
             value={selectedPaymentStatus}
             onChange={(e) => setSelectedPaymentStatus(e.target.value)}
             className="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition min-w-[140px]"
@@ -642,7 +643,7 @@ function StudentReport() {
             <option value="">حالة الشهر</option>
             <option value="paid">مدفوع</option>
             <option value="unpaid">غير مدفوع</option>
-          </select>
+          </Select>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm mt-6">

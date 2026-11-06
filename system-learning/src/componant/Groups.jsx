@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import GroupDetails from "./GroupDetails";
+import Select from "../components/Select";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -256,7 +257,7 @@ function Groups() {
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5">الصف الدراسي</label>
-              <select
+              <Select
                 name="academicYear"
                 value={form.academicYear}
                 onChange={handleChange}
@@ -266,7 +267,7 @@ function Groups() {
                 {ACADEMIC_GRADE_OPTIONS.map((g) => (
                   <option key={g} value={g}>{g}</option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5">الوقت</label>
@@ -319,7 +320,7 @@ function Groups() {
 
       {/* Filter */}
       <div className="flex items-center gap-3">
-        <select
+        <Select
           value={filterYear}
           onChange={e => setFilterYear(e.target.value)}
           className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
@@ -328,7 +329,7 @@ function Groups() {
           {[...new Set(groups.map(g => g.academicYear))].map(y => (
             <option key={y} value={y}>{y}</option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {/* Groups Grid */}

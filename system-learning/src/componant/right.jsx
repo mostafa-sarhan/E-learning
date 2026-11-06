@@ -1,15 +1,18 @@
 import React, { useContext, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../App'
+import ThemeToggle from '../components/ThemeToggle'
 
 function Right() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Reuses the app's logout (clears state and storage); `replace` keeps Back from returning to a protected page.
   const handleLogout = () => {
+    setMobileOpen(false);
     logout();
-    navigate('/');
+    navigate('/login', { replace: true });
   };
 
   const navItemClass = ({ isActive }) =>
@@ -20,6 +23,38 @@ function Right() {
     }`
 
   const closeMobile = () => setMobileOpen(false);
+
+  const roleLabel = user.role === "admin" ? "مدير" : user.role === "employee" ? "موظف" : "طالب";
+
+  // Pinned sidebar footer: user, theme toggle and logout.
+  const sidebarFooter = (
+    <div className="shrink-0 border-t border-slate-100 pt-4 mt-4">
+      <div className="flex items-center gap-3 mb-3 px-1">
+        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
+          {user.name.charAt(0)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-slate-800 truncate">{user.name}</p>
+          <p className="text-xs text-slate-500 truncate">{roleLabel}</p>
+        </div>
+      </div>
+      <div className="flex flex-col gap-1">
+        <ThemeToggle className="w-full px-4 py-2" />
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label="تسجيل الخروج"
+          title="تسجيل الخروج"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition"
+        >
+          <svg className="w-4 h-4 shrink-0 rtl:-scale-x-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H9m4 8H6a2 2 0 01-2-2V6a2 2 0 012-2h7" />
+          </svg>
+          <span className="truncate">تسجيل الخروج</span>
+        </button>
+      </div>
+    </div>
+  );
 
   const navItems = (
     <>
@@ -168,30 +203,14 @@ function Right() {
             <nav className="flex-1 overflow-y-auto px-4 py-4">
               <ul className="space-y-1.5">{navItems}</ul>
             </nav>
-            <div className="border-t border-slate-100 p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
-                  {user.name.charAt(0)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-800 truncate">{user.name}</p>
-                  <p className="text-xs text-slate-500 truncate">{user.role === "admin" ? "مدير" : user.role === "employee" ? "موظف" : "طالب"}</p>
-                </div>
-              </div>
-              <button onClick={() => { handleLogout(); closeMobile(); }} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m-8.25-5.25a2.25 2.25 0 00-2.25 2.25v13.5a2.25 2.25 0 002.25 2.25m10.5-7.5h-8.25" />
-                </svg>
-                تسجيل خروج
-              </button>
-            </div>
+            <div className="px-4 pb-4">{sidebarFooter}</div>
           </div>
         </div>
       )}
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex h-full flex-col px-4 py-6">
-        <div className="flex items-center gap-3 px-2 mb-10">
+      <aside className="hidden lg:flex h-full min-h-0 flex-col px-4 py-6">
+        <div className="shrink-0 flex items-center gap-3 px-2 mb-10">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-200">
             <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -203,27 +222,11 @@ function Right() {
           </div>
         </div>
 
-        <nav className="flex-1">
+        <nav className="flex-1 min-h-0 overflow-y-auto">
           <ul className="space-y-2">{navItems}</ul>
         </nav>
 
-        <div className="mt-auto border-t border-slate-100 pt-6 px-2">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
-              {user.name.charAt(0)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-800 truncate">{user.name}</p>
-              <p className="text-xs text-slate-500 truncate">{user.role === "admin" ? "مدير" : user.role === "employee" ? "موظف" : "طالب"}</p>
-            </div>
-          </div>
-          <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m-8.25-5.25a2.25 2.25 0 00-2.25 2.25v13.5a2.25 2.25 0 002.25 2.25m10.5-7.5h-8.25" />
-            </svg>
-            تسجيل خروج
-          </button>
-        </div>
+        {sidebarFooter}
       </aside>
     </>
   )

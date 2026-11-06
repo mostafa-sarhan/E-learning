@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -37,7 +38,8 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-slate-100 flex items-center justify-center p-4" dir="rtl">
+    <div className="relative min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-slate-100 flex items-center justify-center p-4" dir="rtl">
+      <ThemeToggle className="absolute top-4 left-4 px-3 py-2 bg-white/80 backdrop-blur-sm shadow-sm border border-slate-200" />
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
         <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-8 py-10 text-center">
           <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-4">

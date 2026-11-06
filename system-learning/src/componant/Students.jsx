@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState, useMemo } from "react";
+import Select from "../components/Select";
 import StudentDetails from "./StudentDetails";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
@@ -155,25 +156,25 @@ function Students() {
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">الصف الدراسي</label>
-            <select value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
+            <Select value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
               <option value="">كل الصفوف</option>
               {availableTerms.map(term => (<option key={term} value={term}>{term}</option>))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">المجموعة</label>
-            <select value={searchGroup} disabled={!searchTerm && availableTerms.length > 0} onChange={e => setSearchGroup(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50 disabled:opacity-50">
+            <Select value={searchGroup} disabled={!searchTerm && availableTerms.length > 0} onChange={e => setSearchGroup(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50 disabled:opacity-50">
               <option value="">كل المجموعات</option>
               {filteredGroups.map(g => (<option key={g._id} value={g._id}>{g.name}</option>))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">حاله الشهر الحالي</label>
-            <select value={searchPaymentStatus} onChange={e => setSearchPaymentStatus(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
+            <Select value={searchPaymentStatus} onChange={e => setSearchPaymentStatus(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50">
               <option value="">الكل</option>
               <option value="paid">مدفوع ({currentMonthName})</option>
               <option value="unpaid">لم يدفع ({currentMonthName})</option>
-            </select>
+            </Select>
           </div>
         </div>
       </section>

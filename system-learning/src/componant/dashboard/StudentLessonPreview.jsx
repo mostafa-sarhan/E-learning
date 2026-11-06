@@ -23,7 +23,7 @@ function LessonPreview({ lesson, onPlay }) {
 
   return (
     <div className="mb-6 group cursor-pointer" onClick={onPlay}>
-      <div className="relative rounded-2xl overflow-hidden bg-slate-900 shadow-xl shadow-slate-300/30 hover:shadow-2xl hover:shadow-slate-400/40 transition-all duration-300 hover:-translate-y-1">
+      <div className="theme-keep relative rounded-2xl overflow-hidden bg-slate-900 shadow-xl shadow-slate-300/30 hover:shadow-2xl hover:shadow-slate-400/40 transition-all duration-300 hover:-translate-y-1">
         <div className="aspect-video w-full relative">
           {vimeoId ? (
             <iframe

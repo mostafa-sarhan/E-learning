@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import Select from "../components/Select";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
@@ -95,7 +96,7 @@ function StudentAccounts() {
           </div>
           <div className="flex-1 min-w-[180px]">
             <label className="block text-xs font-medium text-slate-500 mb-1.5">الصف الدراسي</label>
-            <select
+            <Select
               value={selectedYear}
               onChange={e => { setSelectedYear(e.target.value); setSelectedGroup(""); }}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50"
@@ -104,11 +105,11 @@ function StudentAccounts() {
               {availableYears.map(y => (
                 <option key={y} value={y}>{y}</option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="flex-1 min-w-[180px]">
             <label className="block text-xs font-medium text-slate-500 mb-1.5">المجموعة</label>
-            <select
+            <Select
               value={selectedGroup}
               onChange={e => setSelectedGroup(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50"
@@ -117,7 +118,7 @@ function StudentAccounts() {
               {availableGroups.map(g => (
                 <option key={g} value={g}>{g}</option>
               ))}
-            </select>
+            </Select>
           </div>
           {(searchTerm || selectedYear || selectedGroup) && (
             <div className="flex items-end">
